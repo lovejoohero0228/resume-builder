@@ -1,0 +1,53 @@
+# 고정 어휘 — angle / tag / 금지어. 임의 추가 금지.
+# angle 은 7개 고정. 프로젝트 하나에 붙는 angle 은 최대 3개.
+
+angles:
+  ownership-e2e:
+    claim: "문제 정의부터 완결까지 스스로 범위를 잡고 책임졌다"
+    boundary: "'참여' 수준은 해당 없음. 단독 또는 주도만."
+    jd_keywords: [오너십, end-to-end, 주도, lead, 총괄]
+
+  engineering-craft:
+    claim: "견고하고 유지보수 가능한 시스템을 구현했다"
+    boundary: "지표 개선을 말하는 순간 performance-optimization으로 간다."
+    jd_keywords: [파이프라인, 아키텍처, 프로덕션, 리팩터링, 시스템 설계]
+
+  performance-optimization:
+    claim: "정량 지표를 실제로 끌어올렸다"
+    boundary: "before/after 수치가 있어야만 성립. metric kind fact 필수."
+    jd_keywords: [최적화, 지연, latency, 처리량, 정확도 개선, 경량화]
+
+  modeling-foundation:
+    claim: "알고리즘 선택과 측정 설계 모두에 정량적 근거가 있다"
+    boundary: >
+      평가 설계를 포함한다 — 평가축 분해, 데이터셋 구성·샘플링 원칙,
+      임계값 결정, 모델 비교 실험의 통제 변수, 라벨링 규칙 설계까지.
+      별도 evaluation angle을 만들지 않기로 했으므로 평가 관련 서술은 반드시 여기에 둘 것.
+    jd_keywords: [평가, evaluation, 벤치마크, 지표 설계, 통계, 실험 설계, 모델링]
+
+  research-depth:
+    claim: "선행연구를 조사·재현하고 실험을 설계했다"
+    boundary: "논문 또는 외부 기법 기반일 때만."
+    jd_keywords: [연구, 논문, SOTA, 재현, R&D, 리서치]
+
+  shipping-delivery:
+    claim: "연구에 그치지 않고 제품·인증까지 도달시켰다"
+    boundary: "PoC 종료는 해당 없음. 실제 배포·출시·인증 통과만."
+    jd_keywords: [배포, 출시, 상용화, 양산, 인증, deployment]
+
+  stakeholder-alignment:
+    claim: "규제·조직 제약 아래에서 조율하고 문서로 설득했다"
+    boundary: >
+      도메인/규제 제약을 포함한다 — 규제기관 대응, 인증 요건 해석,
+      벤더 평가, 부서 간 협업, 영어 기반 원격 협업.
+      별도 domain-regulatory angle을 만들지 않기로 했으므로 여기에 둘 것.
+    jd_keywords: [협업, 규제, 인허가, 커뮤니케이션, cross-functional, 이해관계자]
+
+tags:
+  domain: [Medical-AI, Enterprise-AI, Consumer-Platform, On-device]
+  tech:   [LLM, RAG, Speech, Vision, NLP, Text2SQL, Agent, Multimodal]
+
+banned_terms:
+  ko: [대폭, 획기적, 크게, 매우, 상당히, 효율적으로, 성공적으로, 완벽하게, 혁신적]
+  en: [significantly, drastically, dramatically, greatly, successfully,
+       seamlessly, cutting-edge, revolutionary, world-class]

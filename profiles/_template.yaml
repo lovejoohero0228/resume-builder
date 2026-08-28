@@ -1,0 +1,29 @@
+# 프로필 템플릿 — 공고 하나당 파일 하나. 복사해서 사용.
+# 확정은 사람이 한다. LLM(assist.py jd)은 .draft.yaml 초안까지만.
+
+name: <profile-id>                    # 파일명과 동일하게. dist/<name>/ 로 출력됨
+target: "<회사> / <직무>"
+lang: ko                              # ko | en | both
+
+emphasis:                             # 우선순위 순. variant 선택 기준.
+  - modeling-foundation
+  - ownership-e2e
+  - stakeholder-alignment
+
+resume:
+  include:                            # 소스 파일 id, 출력 순서대로
+    - 00_identity
+    - 01_skills
+    - 10_experience/e01
+    - 10_experience/e02
+    - 02_education
+  project_order: [p02, p01, p03]      # 경력 내 {{ pXX }} 및 프로젝트 노출 순서
+  max_bullets_per_job: 4
+
+portfolio:
+  include:
+    - 00_identity
+    - 20_projects/p02
+    - 20_projects/p01
+    - 90_appendix
+  detail_level: full                  # full | short

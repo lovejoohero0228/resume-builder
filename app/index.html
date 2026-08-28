@@ -1,0 +1,749 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>career-master · GUI</title>
+<style>
+  :root{--bg:#0f1115;--panel:#171a21;--panel2:#1e222b;--line:#2a2f3a;--fg:#e6e9ef;--mut:#9aa4b2;--acc:#5b9dff;--good:#3fb950;--warn:#d29922;--bad:#f85149}
+  *{box-sizing:border-box}
+  body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Malgun Gothic",sans-serif;background:var(--bg);color:var(--fg)}
+  header{display:flex;align-items:center;gap:16px;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--line)}
+  header h1{font-size:15px;margin:0;font-weight:600}
+  .tabs{display:flex;gap:4px;margin-left:8px}
+  .tabs button{background:transparent;color:var(--mut);border:0;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px}
+  .tabs button.on{background:var(--panel2);color:var(--fg)}
+  .status{margin-left:auto;font-size:12px;color:var(--mut)}
+  main{padding:0}
+  .view{display:none;padding:16px;gap:16px}
+  .view.on{display:flex}
+  .col{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;overflow:auto}
+  .col h2{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:0 0 10px}
+  button.act{background:var(--acc);color:#fff;border:0;border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:600}
+  button.ghost{background:var(--panel2);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer}
+  button:disabled{opacity:.5;cursor:default}
+  input,select,textarea{background:var(--panel2);color:var(--fg);border:1px solid var(--line);border-radius:7px;padding:7px 9px;font:inherit}
+  textarea{width:100%;height:calc(100vh - 190px);resize:none;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;line-height:1.5}
+  .filelist{list-style:none;margin:0;padding:0}
+  .filelist li{padding:6px 8px;border-radius:6px;cursor:pointer;color:var(--mut);font-size:13px;white-space:nowrap}
+  .filelist li:hover{background:var(--panel2)}
+  .filelist li.on{background:var(--panel2);color:var(--fg)}
+  .filelist .grp{color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin:10px 4px 4px;cursor:default}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .chk{display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:6px}
+  .chk:hover{background:var(--panel2)}
+  .badge{font-size:11px;padding:1px 7px;border-radius:20px;background:#243; color:#8fd694;border:1px solid #2f5}
+  .badge.mut{background:var(--panel2);color:var(--mut);border-color:var(--line)}
+  .ord{display:flex;flex-direction:column}
+  .ord button{background:transparent;border:0;color:var(--mut);cursor:pointer;line-height:1;font-size:11px;padding:0 4px}
+  .item{display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:6px;border:1px solid transparent}
+  .item:hover{border-color:var(--line)}
+  .muted{color:var(--mut)}
+  .warns{font-size:12px;color:var(--warn)}
+  .errs{font-size:12px;color:var(--bad)}
+  label.fld{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mut)}
+  label.fld input,label.fld select{color:var(--fg)}
+  hr{border:0;border-top:1px solid var(--line);margin:12px 0}
+  /* preview markdown */
+  .md{background:#fff;color:#111;border-radius:8px;padding:0}
+  .md .page{padding:40px 46px;min-height:200px}
+  .md .page + .page{border-top:8px solid #eef}
+  .md h1{font-size:24px;margin:.2em 0 .1em;border-bottom:2px solid #222;padding-bottom:6px}
+  .md h2{font-size:17px;margin:1.1em 0 .3em;color:#0b3}
+  .md h2{color:#123}
+  .md h3{font-size:15px;margin:1em 0 .2em}
+  .md h4{font-size:13px;margin:.8em 0 .2em;color:#333}
+  .md p{margin:.4em 0}
+  .md ul,.md ol{margin:.3em 0 .3em 1.2em;padding:0}
+  .md li{margin:.15em 0}
+  .md table{border-collapse:collapse;margin:.6em 0;font-size:13px;width:100%}
+  .md th,.md td{border:1px solid #ccc;padding:5px 8px;text-align:left;vertical-align:top}
+  .md th{background:#f3f5f8}
+  .md blockquote{margin:.5em 0;padding:.3em .9em;border-left:3px solid #cbd5e1;color:#475569;background:#f8fafc}
+  .md code{background:#eef1f5;padding:1px 5px;border-radius:4px;font-family:ui-monospace,Consolas,monospace;font-size:.92em}
+  .md pre{background:#f3f5f8;padding:10px 12px;border-radius:8px;overflow:auto}
+  .md hr{border-top:1px solid #e2e8f0}
+  .md a{color:#1a56db;text-decoration:none}
+  .previewbar{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+  .grow{flex:1}
+  /* 미리보기 col은 overflow를 풀어 포트폴리오 좌측 목차(sticky)가 뷰포트에 고정되게 */
+  #view-preview>.col{overflow:visible}
+  .subtabs{display:flex;gap:6px;margin-bottom:14px}
+  .subtabs button{background:var(--panel2);color:var(--mut);border:1px solid var(--line);border-radius:9px;padding:8px 18px;cursor:pointer;font-weight:600;font-size:14px}
+  .subtabs button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+  .prow{border:1px solid var(--line);border-radius:10px;padding:9px 11px;margin:7px 0;background:var(--panel)}
+  .prow.inc{border-color:#3d6bb0;background:#141c28}
+  .prow .ptop{display:flex;align-items:center;gap:9px}
+  .prow .ptitle{flex:1;font-size:13.5px}
+  .prow .angs{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;padding-left:30px}
+  .angchip{font-size:12px;padding:4px 11px;border-radius:999px;border:1px solid var(--line);color:var(--mut);cursor:pointer;user-select:none;transition:.12s}
+  .angchip:hover{border-color:var(--acc);color:var(--fg)}
+  .angchip.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+</style>
+</head>
+<body>
+<header>
+  <h1>career-master</h1>
+  <div class="tabs">
+    <button data-tab="source" class="on">소스 편집</button>
+    <button data-tab="assemble">공고 조립</button>
+    <button data-tab="preview">미리보기 · Export</button>
+  </div>
+  <div class="status" id="status"></div>
+</header>
+<main>
+  <!-- SOURCE -->
+  <section class="view on" id="view-source" style="height:calc(100vh - 52px)">
+    <div class="col" style="flex:0 0 300px"><h2>파일</h2><ul class="filelist" id="filelist"></ul></div>
+    <div class="col grow"><h2>편집 <span id="editpath" class="muted"></span></h2>
+      <textarea id="editor" spellcheck="false" placeholder="왼쪽에서 파일을 선택하세요"></textarea>
+      <div class="row" style="margin-top:8px"><button class="act" id="saveBtn" disabled>저장</button>
+        <span id="saveMsg" class="muted"></span></div>
+    </div>
+    <div class="col grow"><h2>미리보기</h2><div class="md" id="srcPrev" style="padding:16px"></div></div>
+  </section>
+
+  <!-- ASSEMBLE -->
+  <section class="view" id="view-assemble" style="height:calc(100vh - 52px)">
+    <div class="col" style="flex:0 0 340px">
+      <h2>프로필</h2>
+      <div class="row">
+        <label class="fld grow">이름(파일명)<input id="pName" placeholder="lunit-coe"></label>
+      </div>
+      <label class="fld" style="margin-top:8px">타깃(회사/직무)<input id="pTarget" placeholder="Lunit / Applied Research Scientist"></label>
+      <div class="row" style="margin-top:8px">
+        <label class="fld">언어<select id="pLang"><option value="ko">ko</option><option value="en">en</option><option value="both">both</option></select></label>
+        <label class="fld">포트폴리오 상세<select id="pDetail"><option value="full">full</option><option value="short">short</option></select></label>
+        <label class="fld">직무당 bullet<input id="pMax" type="number" min="0" value="4" style="width:70px"></label>
+      </div>
+      <hr>
+      <div class="row"><h2 style="margin:0">기존 프로필</h2></div>
+      <div class="row" style="margin-top:6px"><select id="pLoad" class="grow"></select><button class="ghost" id="loadBtn">불러오기</button></div>
+      <hr>
+      <div class="row"><button class="act" id="buildBtn">조립하기 →</button><button class="ghost" id="saveProfBtn">프로필 저장</button></div>
+      <div id="asmMsg" class="muted" style="margin-top:8px"></div>
+      <div id="asmWarn" class="warns" style="margin-top:8px"></div>
+    </div>
+
+    <div class="col grow">
+      <div class="subtabs">
+        <button data-sub="resume" class="on">📄 이력서</button>
+        <button data-sub="portfolio">📁 포트폴리오</button>
+      </div>
+      <div id="sub-resume">
+        <h2>포함 섹션</h2><div id="resSections" class="row"></div>
+        <h2 style="margin-top:12px">경력</h2><div id="resExp"></div>
+        <h2 style="margin-top:12px">프로젝트 — 포함 &amp; 사용할 관점 선택</h2>
+        <p class="muted" style="margin:.2em 0 .6em">체크 = 포함 · 관점 칩을 눌러 <b>복수 선택</b>(선택 관점마다 이력서 bullet 1개) · ↑↓ 순서</p>
+        <div id="resProjects"></div>
+      </div>
+      <div id="sub-portfolio" style="display:none">
+        <h2>포함 섹션</h2><div id="portSections" class="row"></div>
+        <h2 style="margin-top:12px">프로젝트 — 포함 &amp; 강조 관점(카드 칩)</h2>
+        <p class="muted" style="margin:.2em 0 .6em">체크 = 포함 · 관점 칩은 카드 상단에 표시됨 · ↑↓ 순서</p>
+        <div id="portProjects"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PREVIEW -->
+  <section class="view" id="view-preview" style="min-height:calc(100vh - 52px)">
+    <div class="col grow">
+      <div class="previewbar">
+        <select id="pvKind"><option value="resume">이력서</option><option value="portfolio">포트폴리오</option></select>
+        <select id="pvLang"></select>
+        <span class="grow"></span>
+        <button class="ghost" id="exPrint">인쇄 / PDF 저장</button>
+        <button class="ghost" id="exDoc">Word 내려받기</button>
+        <button class="ghost" id="exHtml">.html 내려받기</button>
+      </div>
+      <div class="md" id="preview"><div class="page muted" style="padding:40px">조립하기를 누르면 여기에 표시됩니다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const state={cat:null, result:null,
+  emphasisOrder:[], emphasisOn:new Set(),
+  projOrder:[], projResume:new Set(), projPort:new Set(),
+  plainResume:new Set(['00_identity','01_skills','02_education']),
+  expResume:new Set(),
+  plainPort:new Set(['00_identity','90_appendix'])};
+
+async function getJSON(u){const r=await fetch(u);return r.json();}
+async function postJSON(u,b){const r=await fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});return r.json();}
+function setStatus(t){$('#status').textContent=t;}
+
+/* ---------- minimal markdown → html ---------- */
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function inline(s){
+  s=esc(s);
+  s=s.replace(/`([^`]+)`/g,'<code>$1</code>');
+  s=s.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+  s=s.replace(/(^|[^*])\*([^*]+)\*/g,'$1<em>$2</em>');
+  s=s.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+  s=s.replace(/(https?:\/\/[^\s<)]+)(?![^<]*<\/a>)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>');
+  return s;
+}
+function md2html(md){
+  const lines=(md||'').replace(/\r/g,'').split('\n');
+  let html='',i=0,list=null;
+  const closeList=()=>{if(list){html+=`</${list}>`;list=null;}};
+  while(i<lines.length){
+    let ln=lines[i];
+    if(/^\s*$/.test(ln)){closeList();i++;continue;}
+    let m;
+    if(m=ln.match(/^(#{1,6})\s+(.*)$/)){closeList();const l=m[1].length;html+=`<h${l}>${inline(m[2])}</h${l}>`;i++;continue;}
+    if(/^---+\s*$/.test(ln)){closeList();html+='<hr>';i++;continue;}
+    if(/^\s*>\s?/.test(ln)){closeList();let q=[];while(i<lines.length&&/^\s*>\s?/.test(lines[i])){q.push(lines[i].replace(/^\s*>\s?/,''));i++;}html+=`<blockquote>${inline(q.join(' '))}</blockquote>`;continue;}
+    // table
+    if(ln.includes('|')&&i+1<lines.length&&/^\s*\|?[\s:|-]+\|[\s:|-]*$/.test(lines[i+1])){
+      closeList();
+      const cells=r=>r.trim().replace(/^\||\|$/g,'').split('|').map(c=>c.trim());
+      const head=cells(ln);i+=2;let rows=[];
+      while(i<lines.length&&lines[i].includes('|')&&!/^\s*$/.test(lines[i])){rows.push(cells(lines[i]));i++;}
+      html+='<table><thead><tr>'+head.map(h=>`<th>${inline(h)}</th>`).join('')+'</tr></thead><tbody>'+
+        rows.map(r=>'<tr>'+r.map(c=>`<td>${inline(c)}</td>`).join('')+'</tr>').join('')+'</tbody></table>';
+      continue;
+    }
+    const cont=k=>k<lines.length&&lines[k].trim()&&!/^\s*[-*]\s+/.test(lines[k])&&!/^\s*\d+\.\s+/.test(lines[k])&&!/^#{1,6}\s/.test(lines[k])&&!/^\s*>/.test(lines[k])&&!lines[k].includes('|');
+    if(m=ln.match(/^\s*[-*]\s+(.*)$/)){if(list!=='ul'){closeList();list='ul';html+='<ul>';}let t=m[1];i++;while(cont(i)){t+=' '+lines[i].trim();i++;}html+=`<li>${inline(t)}</li>`;continue;}
+    if(m=ln.match(/^\s*\d+\.\s+(.*)$/)){if(list!=='ol'){closeList();list='ol';html+='<ol>';}let t=m[1];i++;while(cont(i)){t+=' '+lines[i].trim();i++;}html+=`<li>${inline(t)}</li>`;continue;}
+    closeList();
+    let para=[ln];i++;
+    while(i<lines.length&&!/^\s*$/.test(lines[i])&&!/^(#{1,6}\s|>|\s*[-*]\s|\s*\d+\.\s|---+\s*$)/.test(lines[i])&&!(lines[i].includes('|'))){para.push(lines[i]);i++;}
+    html+=`<p>${inline(para.join(' '))}</p>`;
+  }
+  closeList();return html;
+}
+
+/* ---------- Resume 1 형식 (docx: Arial · 좌측 · 남색 #153D63) ---------- */
+const R1CSS=`
+.r1{font-family:Arial,'Helvetica Neue',sans-serif;color:#111;font-size:9.4pt;line-height:1.42}
+.r1 .name{font-size:18pt;font-weight:700;margin:0}
+.r1 .tag{font-size:9pt;font-weight:700;color:#153D63;margin:2px 0 1px}
+.r1 .contact{font-size:8.4pt;color:#555;margin:0 0 6px}
+.r1 h2{font-size:10pt;font-weight:700;color:#153D63;letter-spacing:.05em;text-transform:uppercase;margin:12px 0 4px;border-bottom:1px solid #dbe0e8;padding-bottom:2px}
+.r1 p.prof{margin:0}
+.r1 .skill{margin:1.5px 0}
+.r1 .skill b{color:#153D63}
+.r1 .job{margin:7px 0 3px}
+.r1 .job .co{font-weight:700}
+.r1 .job .meta{color:#555;font-size:9pt}
+.r1 .job .ti{color:#555;font-size:9pt;margin:1px 0 2px}
+.r1 ul{margin:2px 0 3px;padding-left:16px}
+.r1 li{margin:1.5px 0}
+.r1 .edu{margin:1.5px 0}
+.r1 .edu.sub{margin-left:14px;color:#555}
+`;
+function mb(s){return esc(s||'').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');}
+function trimLead(s){s=(s||'').replace(/\s+/g,' ').trim();const m=s.match(/^[^.。!?\n]+[.。!?]?/);let t=m?m[0]:s;if(t.length>120)t=t.slice(0,118)+'…';return t;}
+// 프로젝트 본문에서 '문제 정의' 섹션만 추출 (없으면 첫 ## 섹션)
+function problemDef(bodyMd){
+  const lines=(bodyMd||'').replace(/\r/g,'').split('\n');
+  let start=-1;
+  for(let k=0;k<lines.length;k++){if(/^##\s+/.test(lines[k])&&/문제\s*정의|problem/i.test(lines[k])){start=k;break;}}
+  if(start<0)for(let k=0;k<lines.length;k++){if(/^##\s+/.test(lines[k])){start=k;break;}}
+  if(start<0)return '';
+  let end=lines.length;
+  for(let k=start+1;k<lines.length;k++){if(/^##\s+/.test(lines[k])){end=k;break;}}
+  return lines.slice(start+1,end).join('\n').trim();
+}
+// 나의 역할 그룹 → 위계 불렛 (라벨=상위, items=하위 불렛)
+function roleGroupsHtml(groups){
+  return (groups||[]).map(g=>{
+    if(g.label){
+      const subs=(g.items||[]).map(t=>`<div class="kpoint sub">${mb(t)}</div>`).join('');
+      return `<div class="kgroup">${esc(g.label)}</div>${subs}`;
+    }
+    return (g.items||[]).map(t=>`<div class="kpoint">${mb(t)}</div>`).join('');
+  }).join('');
+}
+// 역할 범위 → 태그 (리드 / 주도 / 단독 / 참여 …) + 상세
+function roleScope(role,isKo){
+  // 역할은 두 가지로만: 참여 → 프로젝트 참여, 그 외(리드·주도·단독 등) → 프로젝트 리더
+  if(/참여|contributor/i.test(role||'')) return isKo?'프로젝트 참여':'Project Contributor';
+  return isKo?'프로젝트 리더':'Project Lead';
+}
+function roleTagHtml(role,isKo){
+  if(!role) return '';
+  const scope=roleScope(role,isKo);
+  // 괄호 밖(pre) / 안(paren) 분리 후, 칩과 겹치는 범위어를 제거 → 괄호 없이 detail 구성
+  const m=role.match(/^([^(（]*)[(（]([^)）]*)[)）]?/);
+  const pre=(m?m[1]:role), paren=(m?m[2]:'');
+  const TRIG=/리드|리더|주도|단독|참여|Lead|Sole|Drove|Contributor/i;
+  const preRest=pre.replace(TRIG,'').replace(/\s+/g,' ').replace(/^[·,\s]+|[·,\s]+$/g,'').trim();
+  const detail=[preRest, paren.trim()].filter(Boolean).join(' · ');
+  return `<div class="roletag"><span class="rt-chip">${esc(scope)}</span>${detail?`<span class="rt-detail">${esc(detail)}</span>`:''}</div>`;
+}
+// 문제 정의 → 풀고자 한 문제 / 제약·난점 2분할
+function problemHtml(pb,isKo){
+  const row=(lab,txt)=>txt?`<div class="pdsub"><span class="pdlabel">${lab}</span><div class="pdbody">${isKo?md2html(txt):`<p>${mb(txt)}</p>`}</div></div>`:'';
+  return row(isKo?'풀고자 한 문제':'Goal', pb.goal)+row(isKo?'제약 · 난점':'Constraints & hurdles', pb.hurdle);
+}
+function resumeInner(rs){
+  if(!rs) return '<div class="r1">데이터 없음 — 조립하세요.</div>';
+  const L=(rs.lang==='ko')?{p:'프로필',s:'기술 스택',e:'경력'}:{p:'Profile',s:'Technical Skills',e:'Experience'};
+  const id=rs.identity||{}; let h='<div class="r1">';
+  if(rs.identity){
+    h+=`<div class="name">${esc(id.name||'')}</div>`;
+    if(id.tagline)h+=`<div class="tag">${esc(id.tagline)}</div>`;
+    if(id.contact)h+=`<div class="contact">${esc(id.contact)}</div>`;
+    if(id.summary)h+=`<h2>${L.p}</h2><p class="prof">${mb(id.summary)}</p>`;
+  }
+  if(rs.skills&&rs.skills.length){h+=`<h2>${L.s}</h2>`;
+    rs.skills.forEach(s=>h+=`<div class="skill">${s.label?`<b>${esc(s.label)}</b>&nbsp;&nbsp;`:''}${mb(s.rest)}</div>`);
+  }
+  if(rs.experiences&&rs.experiences.length){h+=`<h2>${L.e}</h2>`;
+    rs.experiences.forEach(e=>{
+      const meta=[e.title,e.period,e.location].filter(Boolean).map(esc).join(' · ');
+      h+=`<div class="job"><span class="co">${esc(e.company)}</span>${meta?` <span class="meta">— ${meta}</span>`:''}`;
+      if(e.context)h+=`<div class="ti">${mb(e.context)}</div>`;
+      if(e.bullets&&e.bullets.length)h+='<ul>'+e.bullets.map(b=>`<li>${mb(b)}</li>`).join('')+'</ul>';
+      h+='</div>';
+    });
+  }
+  (rs.education||[]).forEach(g=>{
+    h+=`<h2>${esc(g.title)}</h2>`;
+    g.items.forEach(it=>h+=`<div class="edu${it.sub?' sub':''}">${mb(it.text)}</div>`);
+  });
+  return h+'</div>';
+}
+
+/* ---------- 디자인 포트폴리오 (Toss/Notion/Apple 감성) ---------- */
+const PERSONA="문제 정의부터 규제 대응/배포까지 전 과정에서 오너십을 갖고 일하는 멀티모달 AI 엔지니어";
+const KEYWORDS=["E2E 오너십","빠른 학습","self-motivation","문제 정의 및 AI 시스템 기획력","명확한 커뮤니케이션","일잘러"];
+
+const PFCSS=`
+.pf{--pri:#1e3a8a;--pri-ink:#1b3168;--pri-deep:#101d40;--ink:#1f2937;--mut:#6b7480;--tint:#eef1fb;--chip:#e0e6f6;--line:#e5e8f1;--bg:#edeff4;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'Pretendard','Apple SD Gothic Neo','Segoe UI',Roboto,'Malgun Gothic',sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
+.pf-shell{display:flex;max-width:1200px;margin:0 auto}
+.side{position:sticky;top:0;align-self:flex-start;height:100vh;flex:0 0 236px;background:#fff;border-right:1px solid var(--line);padding:26px 16px;overflow:auto}
+.side-name{font-weight:800;font-size:18px}
+.side-role{font-size:11.5px;color:var(--mut);margin:3px 0 18px;line-height:1.45}
+.side nav{display:flex;flex-direction:column}
+.tocitem{display:flex;gap:9px;align-items:baseline;font-size:13px;color:var(--mut);text-decoration:none;padding:8px 10px;border-radius:9px;margin:1px 0;border-left:2px solid transparent;line-height:1.35;transition:.12s}
+.tocitem .num{font-variant-numeric:tabular-nums;color:#b3bcc7;font-weight:800;font-size:11px;min-width:16px}
+.tocitem:hover{background:var(--tint);color:var(--ink)}
+.tocitem.on{background:var(--tint);color:var(--pri-ink);font-weight:700;border-left-color:var(--pri)}
+.tocitem.on .num{color:var(--pri)}
+.tocitem.sub{font-size:12.5px}
+.main{flex:1;min-width:0;max-width:900px;padding:26px 30px}
+.card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:30px 34px;margin:0 0 20px;box-shadow:0 1px 2px rgba(16,24,40,.03),0 8px 22px rgba(16,24,40,.04);scroll-margin-top:14px}
+.about{background:var(--pri);color:#fff;border:0;box-shadow:0 12px 30px rgba(30,58,138,.28)}
+.about .eyebrow{color:#dcecf7;font-weight:700;font-size:13px}
+.about .hname{font-size:40px;font-weight:800;letter-spacing:-.02em;margin:8px 0 6px}
+.about .persona{font-size:17px;font-weight:600;color:#eef6fc;margin-bottom:16px;line-height:1.55}
+.about .kw{display:flex;flex-wrap:wrap;gap:8px}
+.about .kw span{background:rgba(255,255,255,.18);color:#fff;font-weight:600;font-size:13px;padding:7px 13px;border-radius:999px}
+.about .contact{margin-top:16px;color:#dbeaf5;font-size:13px}
+.sec-title{font-size:12.5px;font-weight:800;color:var(--pri-ink);letter-spacing:.05em;margin:0 0 18px}
+.stack{display:grid;grid-template-columns:1fr 1fr;gap:20px 28px}
+.skgroup{position:relative;padding-left:16px}
+.skgroup::before{content:'';position:absolute;left:0;top:4px;bottom:4px;width:3px;border-radius:3px;background:linear-gradient(180deg,var(--pri),#9ec9e8)}
+.skhead{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:800;color:var(--pri-ink);margin-bottom:11px}
+.skdot{width:9px;height:9px;border-radius:3px;background:var(--pri);box-shadow:0 0 0 4px var(--tint)}
+.skchips{display:flex;flex-wrap:wrap;gap:7px}
+.skchip{font-size:12.5px;font-weight:600;color:#33407a;background:var(--tint);border:1px solid #d7dcf0;padding:6px 12px;border-radius:10px;transition:.14s}
+.skchip:hover{background:#e3e8f7;border-color:#c6cdec;transform:translateY(-1px)}
+.filters{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px}
+.filters button{font-size:12px;font-weight:600;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--mut);cursor:pointer;transition:.14s}
+.filters button:hover{border-color:var(--pri);color:var(--pri-ink)}
+.filters button.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:15px}
+.thumb{display:block;text-decoration:none;color:inherit;background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;transition:.16s}
+.thumb:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(30,58,138,.15);border-color:#c6cdec}
+.thumb .thimg{height:112px;background:repeating-linear-gradient(45deg,#eef1fb,#eef1fb 10px,#e3e8f7 10px,#e3e8f7 20px);display:flex;align-items:center;justify-content:center;color:#9fb6c8;font-size:12px;font-weight:600;border-bottom:1px solid var(--line);padding:0 14px;text-align:center}
+.thumb .thbody{padding:14px 16px}
+.thnum{font-size:10.5px;font-weight:800;color:var(--pri);letter-spacing:.06em}
+.thtitle{font-size:15px;font-weight:700;margin:3px 0 6px;line-height:1.3}
+.thlead{font-size:12.5px;color:var(--mut);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:36px}
+.thtags{margin-top:9px;display:flex;flex-wrap:wrap;gap:5px}
+.detail .dnum{font-size:11px;font-weight:800;color:var(--pri);letter-spacing:.06em}
+.chead{border-bottom:1px solid #eef1f4;padding-bottom:15px}
+.ctitle{font-size:23px;font-weight:800;letter-spacing:-.01em;margin:4px 0 6px}
+.cmeta{font-size:13px;color:var(--mut);font-weight:500}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:13px}
+.chip{font-size:11.5px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--chip);color:var(--pri-ink)}
+.chip.acc{background:var(--pri);color:#fff}
+.lead{font-size:15px;font-weight:600;color:#37505f;background:var(--tint);border-left:3px solid var(--pri);padding:13px 16px;border-radius:0 12px 12px 0;margin:16px 0}
+.figure{border:1.5px dashed #c3c9e6;border-radius:14px;min-height:190px;background:var(--tint);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#8b93bd;margin:0 0 18px;font-size:26px}
+.figure .fmid{font-size:13px;font-weight:600}
+.figure .fcap{font-size:12px;color:#a7adcf;font-weight:500}
+.kh{font-size:11.5px;font-weight:800;color:var(--pri-ink);letter-spacing:.05em;margin:16px 0 8px}
+.pdef{margin:0 0 4px;font-size:14px;line-height:1.65;color:#37455a}
+.pdef p:first-child{margin-top:0}
+.pdsub{margin:0 0 10px}
+.pdlabel{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.03em;color:var(--pri);background:var(--tint);border:1px solid #d7dcf0;padding:3px 10px;border-radius:8px;margin-bottom:5px}
+.pdbody{font-size:14px;line-height:1.65;color:#37455a}
+.pdbody p{margin:2px 0}
+.pdbody ul{margin:2px 0;padding-left:18px}
+.pdbody li{margin:2px 0}
+.pdbody li::marker{color:var(--pri)}
+.roletag{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin:0 0 12px}
+.rt-chip{font-size:11.5px;font-weight:800;letter-spacing:.02em;color:#fff;background:var(--pri);padding:4px 12px;border-radius:999px}
+.rt-detail{font-size:12.5px;color:var(--mut);font-weight:500}
+.kpoint{display:flex;gap:9px;font-size:14px;line-height:1.6;color:#37455a;margin:5px 0}
+.kpoint::before{content:'▹';color:var(--pri);font-weight:800;flex:0 0 auto}
+.kgroup{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:800;color:var(--pri-ink);margin:14px 0 4px}
+.kgroup::before{content:'';width:8px;height:8px;border-radius:2px;background:var(--pri);flex:0 0 auto}
+.kpoint.sub{margin-left:16px;font-size:13.5px;color:#42505f}
+.kpoint.sub::before{content:'–';color:var(--pri)}
+.factlist{display:flex;flex-direction:column;gap:2px}
+.factrow{display:flex;gap:10px;align-items:flex-start;padding:6px 0;font-size:13.5px;color:#42505f;border-bottom:1px solid #eef1f7}
+.factrow:last-child{border-bottom:0}
+.ftag{flex:0 0 auto;font-size:10px;font-weight:800;padding:2px 8px;border-radius:6px;background:var(--chip);color:var(--pri-ink);letter-spacing:.04em;margin-top:1px}
+.ftag.metric{background:var(--pri);color:#fff}
+.rolebadge{display:inline-block;background:var(--pri);color:#fff;font-size:10.5px;font-weight:800;padding:3px 10px;border-radius:7px;margin-left:9px;vertical-align:middle;letter-spacing:.03em}
+.dec{position:relative;background:var(--tint);border-left:3px solid var(--pri);border-radius:0 12px 12px 0;padding:12px 15px 12px 40px;margin:9px 0;font-size:14px;line-height:1.65;color:#334}
+.dec::before{content:'💡';position:absolute;left:13px;top:11px;font-size:14px}
+.impact{position:relative;background:#e9f0ff;border:1px solid #d3def6;border-radius:12px;padding:12px 15px 12px 40px;margin:8px 0;font-size:14.5px;font-weight:600;color:#22345c;line-height:1.55}
+.impact::before{content:'✦';position:absolute;left:15px;top:11px;color:var(--pri);font-weight:800}
+.more{margin-top:16px;border-top:1px dashed var(--line);padding-top:10px}
+.more>summary{cursor:pointer;font-size:11.5px;font-weight:800;color:var(--mut);letter-spacing:.04em;list-style:none}
+.more>summary::-webkit-details-marker{display:none}
+.more>summary::before{content:'▸ ';color:var(--pri)}
+.more[open]>summary::before{content:'▾ '}
+.more .factrow{font-size:13px}
+.cbody{font-size:14.5px;line-height:1.75;color:#3a4650}
+.cbody h1{font-size:19px;margin:0 0 .5em;font-weight:800}
+.cbody h2{font-size:13px;font-weight:800;color:var(--pri-ink);margin:1.5em 0 .5em;letter-spacing:.02em}
+.cbody h3{font-size:14px;font-weight:700;margin:1em 0 .3em}
+.cbody p{margin:.5em 0}
+.cbody ul,.cbody ol{margin:.5em 0;padding-left:20px}
+.cbody li{margin:.32em 0}
+.cbody li::marker{color:var(--pri)}
+.cbody strong{font-weight:700;color:var(--ink)}
+.cbody table{border-collapse:separate;border-spacing:0;width:100%;margin:.9em 0;font-size:13px;border:1px solid #e6ecf1;border-radius:12px;overflow:hidden}
+.cbody th{background:var(--tint);color:var(--pri-ink);font-weight:700;text-align:left;padding:9px 12px;border-bottom:1px solid #e6ecf1}
+.cbody td{padding:9px 12px;border-bottom:1px solid #eef1f4;vertical-align:top}
+.cbody tr:last-child td{border-bottom:0}
+.cbody blockquote{margin:.7em 0;padding:12px 16px;background:var(--tint);border-left:3px solid var(--pri);border-radius:0 10px 10px 0;color:#4b5a66;font-size:13.5px}
+.cbody code{background:#eef2f6;padding:2px 6px;border-radius:6px;font-size:.9em;color:var(--pri-deep)}
+.cbody a{color:var(--pri-ink);text-decoration:none;font-weight:600}
+.cbody hr{border:0;border-top:1px solid #eef1f4;margin:1em 0}
+.totop{position:fixed;right:24px;bottom:24px;width:44px;height:44px;border-radius:50%;background:var(--pri);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(30,58,138,.4);cursor:pointer;opacity:0;pointer-events:none;transition:.2s;text-decoration:none;font-size:20px;z-index:60}
+.totop.show{opacity:1;pointer-events:auto}
+@media(max-width:860px){.side{display:none}.main{padding:18px;max-width:none}.stack,.grid{grid-template-columns:1fr}}
+@media print{.side,.totop{display:none}#gallery{display:none}.pf-shell{display:block}.main{max-width:none;padding:0}.card{box-shadow:none;break-inside:avoid;page-break-inside:avoid}.about{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+`;
+function pfInit(root){
+  root=root||document;
+  var bars=root.querySelectorAll('.bfill');
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.style.width=(e.target.getAttribute('data-pct')||0)+'%';io.unobserve(e.target);}});},{threshold:.25});
+  bars.forEach(function(b){io.observe(b);});
+  var items=[].slice.call(root.querySelectorAll('.tocitem')),map={};
+  items.forEach(function(a){map[a.getAttribute('href').slice(1)]=a;});
+  var so=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){items.forEach(function(l){l.classList.remove('on');});var a=map[e.target.id];if(a)a.classList.add('on');}});},{rootMargin:'-6% 0px -80% 0px'});
+  root.querySelectorAll('.main [id]').forEach(function(s){so.observe(s);});
+  var tt=root.querySelector('.totop');
+  if(tt){var sc=function(){(window.scrollY>300)?tt.classList.add('show'):tt.classList.remove('show');};window.addEventListener('scroll',sc);sc();tt.addEventListener('click',function(ev){ev.preventDefault();window.scrollTo({top:0,behavior:'smooth'});});}
+  var fb=[].slice.call(root.querySelectorAll('.filters button')),th=[].slice.call(root.querySelectorAll('.thumb'));
+  fb.forEach(function(b){b.addEventListener('click',function(){fb.forEach(function(x){x.classList.remove('on');});b.classList.add('on');var f=b.getAttribute('data-filter');th.forEach(function(t){var tags=t.getAttribute('data-tags')||'';t.style.display=(f==='*'||tags.indexOf('|'+f+'|')>=0)?'':'none';});});});
+}
+function fancyInner(parts, idn, target, lang, skills){
+  idn=idn||{}; const isKo=lang!=='en';
+  const projects=parts.filter(p=>p.kind==='project');
+  const allTags=[]; projects.forEach(p=>(p.tags||[]).forEach(t=>{if(!allTags.includes(t))allTags.push(t);}));
+  let nav=`<a class="tocitem" href="#about"><span class="num">·</span>${isKo?'소개':'About'}</a>`
+        +`<a class="tocitem" href="#stack"><span class="num">·</span>${isKo?'기술 스택':'Skills'}</a>`
+        +`<a class="tocitem" href="#gallery"><span class="num">·</span>${isKo?'프로젝트':'Projects'}</a>`;
+  let thumbs='', details='', pnum=0;
+  parts.forEach(p=>{
+    if(p.sid==='00_identity')return;
+    if(p.kind==='project'){
+      pnum++; const num=String(pnum).padStart(2,'0'), id='pf-'+p.id;
+      const tagAttr='|'+(p.tags||[]).join('|')+'|';
+      const chips=(p.angles||[]).map(a=>`<span class="chip acc">${esc(a)}</span>`).join('')+(p.tags||[]).map(t=>`<span class="chip">${esc(t)}</span>`).join('');
+      const meta=[p.org,p.period].filter(Boolean).map(esc).join('  ·  ');
+      const pts=p.points||[];
+      const lead=pts.length?pts[0].text:trimLead(p.short||'');
+      const roleG=p.role_groups||[], impact=p.impact||[];
+      const roleShort=(p.role||'').split(/[(（]/)[0].trim();
+      const pdRaw=problemDef(p.body_md||'');
+      const problem=isKo?(pdRaw||p.short||''):(p.short||pdRaw||'');
+      const L=isKo?{prob:'문제 정의',role:'나의 역할',imp:'주요 성과'}
+                  :{prob:'PROBLEM',role:'WHAT I DID',imp:'IMPACT'};
+      thumbs+=`<a class="thumb" href="#${id}" data-tags="${esc(tagAttr)}">
+        <div class="thimg">🖼 ${esc(p.title)}</div>
+        <div class="thbody"><div class="thnum">PROJECT ${num} · ${esc(roleScope(p.role,isKo))}</div>
+          <div class="thtitle">${esc(p.title)}</div>
+          <div class="thlead">${esc(p.card||trimLead(lead))}</div>
+          <div class="thtags">${(p.tags||[]).slice(0,3).map(t=>`<span class="chip">${esc(t)}</span>`).join('')}</div>
+        </div></a>`;
+      details+=`<section class="card detail" id="${id}"><div class="chead">
+        <div class="dnum">PROJECT ${num}</div>
+        <div class="ctitle">${esc(p.title)}</div>
+        ${meta?`<div class="cmeta">${meta}</div>`:''}
+        ${chips?`<div class="chips">${chips}</div>`:''}</div>
+        ${(p.problem&&(p.problem.goal||p.problem.hurdle))
+            ?`<div class="kh">${L.prob}</div>${problemHtml(p.problem,isKo)}`
+            :(problem?`<div class="kh">${L.prob}</div><div class="cbody pdef">${isKo?md2html(problem):`<p>${mb(problem)}</p>`}</div>`:'')}
+        <div class="figure"><div>🖼</div><div class="fmid">${isKo?'이미지 / 다이어그램 자리':'image / diagram'}</div><div class="fcap">${esc(p.title)}</div></div>
+        ${roleG.length?`<div class="kh">${L.role}</div>${roleTagHtml(p.role,isKo)}${roleGroupsHtml(roleG)}`:''}
+        ${impact.length?`<div class="kh">${L.imp}</div>${impact.map(f=>f.kind==='metric'?`<div class="impact">${mb(f.value)}</div>`:`<div class="kpoint">${mb(f.value)}</div>`).join('')}`:''}
+      </section>`;
+      nav+=`<a class="tocitem sub" href="#${id}"><span class="num">${num}</span>${esc(p.title)}</a>`;
+    }else{
+      const id='pf-appendix';
+      const label=isKo?'부록':'Appendix';
+      details+=`<section class="card" id="${id}"><div class="cbody">${md2html(p.md)}</div></section>`;
+      nav+=`<a class="tocitem" href="#${id}"><span class="num">·</span>${label}</a>`;
+    }
+  });
+  const about=`<section class="card about" id="about">
+    <div class="eyebrow">${esc(target||'Portfolio')}</div>
+    <div class="hname">${esc(idn.name||'')}</div>
+    <div class="persona">${esc(PERSONA)}</div>
+    <div class="kw">${KEYWORDS.map(k=>`<span>${esc(k)}</span>`).join('')}</div>
+    ${idn.contact?`<div class="contact">${mb(idn.contact)}</div>`:''}</section>`;
+  const skgroups=(skills||[]).map(s=>`<div class="skgroup"><div class="skhead"><span class="skdot"></span>${esc(s.label||'')}</div><div class="skchips">${(s.rest||'').split(/\s*·\s*/).filter(Boolean).map(x=>`<span class="skchip">${esc(x)}</span>`).join('')}</div></div>`).join('');
+  const stack=skgroups?`<section class="card" id="stack"><div class="sec-title">${isKo?'기술 스택':'SKILLS'}</div><div class="stack">${skgroups}</div></section>`:'';
+  const filters=`<div class="filters"><button class="on" data-filter="*">${isKo?'전체':'All'}</button>${allTags.map(t=>`<button data-filter="${esc(t)}">${esc(t)}</button>`).join('')}</div>`;
+  const gallery=`<section class="card" id="gallery"><div class="sec-title">${isKo?'프로젝트':'PROJECTS'}</div>${filters}<div class="grid">${thumbs}</div></section>`;
+  const side=`<aside class="side"><div class="side-name">${esc(idn.name||'')}</div><div class="side-role">${esc(target||'')}</div><nav>${nav}</nav></aside>`;
+  return `<div class="pf-shell">${side}<main class="main">${about}${stack}${gallery}${details}</main></div><a class="totop" href="#" title="맨 위로">↑</a>`;
+}
+function fancyDoc(inner,title){
+  return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>
+<style>*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#eef1f5}${PFCSS}</style></head>
+<body><div class="pf">${inner}</div><script>(${pfInit.toString()})(document);<\/script></body></html>`;
+}
+function fancyPortfolioDoc(lang){
+  const idn=(state.result.identity||{})[lang];
+  const parts=(state.result.portfolio_parts||{})[lang]||[];
+  return fancyDoc(fancyInner(parts, idn, state.result.__target||'Portfolio', lang, (state.result.skills||{})[lang]), 'Portfolio');
+}
+
+/* ---------- SOURCE tab ---------- */
+let curFile=null;
+function buildFileList(){
+  const ul=$('#filelist');ul.innerHTML='';
+  const groups={'정체성/스킬/학력':[], '경력':[], '프로젝트':[], '방법론/부록':[], '프로필':[]};
+  state.cat.files.forEach(f=>{
+    let g='방법론/부록';
+    if(f.startsWith('profiles/'))g='프로필';
+    else if(f.includes('/10_experience/'))g='경력';
+    else if(f.includes('/20_projects/'))g='프로젝트';
+    else if(/00_identity|01_skills|02_education/.test(f))g='정체성/스킬/학력';
+    groups[g].push(f);
+  });
+  Object.entries(groups).forEach(([g,fs])=>{
+    if(!fs.length)return;
+    const gl=document.createElement('li');gl.className='grp';gl.textContent=g;ul.appendChild(gl);
+    fs.forEach(f=>{const li=document.createElement('li');li.textContent=f.replace(/^source\//,'').replace(/^profiles\//,'▸ ');
+      li.dataset.path=f;li.onclick=()=>openFile(f,li);ul.appendChild(li);});
+  });
+}
+async function openFile(path,li){
+  const d=await getJSON('/api/file?path='+encodeURIComponent(path));
+  if(d.error){setStatus('열기 실패');return;}
+  curFile=path;$$('.filelist li').forEach(x=>x.classList.remove('on'));li&&li.classList.add('on');
+  $('#editpath').textContent='· '+path;$('#editor').value=d.content;$('#saveBtn').disabled=false;$('#saveMsg').textContent='';
+  renderSrcPrev();
+}
+function renderSrcPrev(){
+  let t=$('#editor').value;
+  // strip yaml frontmatter for preview of .md; show yaml raw for profiles
+  if(curFile&&curFile.endsWith('.md')){t=t.replace(/^---[\s\S]*?\n---\n?/,'');}
+  $('#srcPrev').innerHTML=md2html(t);
+}
+$('#editor').addEventListener('input',renderSrcPrev);
+$('#saveBtn').onclick=async()=>{
+  if(!curFile)return;
+  const r=await postJSON('/api/file',{path:curFile,content:$('#editor').value});
+  $('#saveMsg').textContent=r.ok?'저장됨 ✓':'실패: '+(r.error||'');
+  if(r.ok){state.cat=await getJSON('/api/catalog');} // refresh (titles etc)
+};
+
+/* ---------- ASSEMBLE tab (project-first, resume/portfolio 분리) ---------- */
+function move(arr,i,d){const j=i+d;if(j<0||j>=arr.length)return;[arr[i],arr[j]]=[arr[j],arr[i]];}
+function pj(pid){return state.cat.projects.find(x=>x.id===pid);}
+
+function projectRow(mode,pid,idx){
+  const p=pj(pid), st=state[mode], inc=st.inc.has(pid);
+  const el=document.createElement('div'); el.className='prow'+(inc?' inc':'');
+  const angchips=(p.variant_angles.length?p.variant_angles:['—']).map(a=>
+    a==='—'?'<span class="muted" style="font-size:12px">변형 없음</span>'
+    :`<span class="angchip ${(st.angles[pid]||[]).includes(a)?'on':''}" data-ang="${a}">${a}</span>`).join('');
+  el.innerHTML=`<div class="ptop">
+      <div class="ord"><button data-up>▲</button><button data-dn>▼</button></div>
+      <input type="checkbox" data-inc ${inc?'checked':''}>
+      <div class="ptitle"><b>${pid}</b> ${esc(p.title_ko)} <span class="muted" style="font-size:12px">${p.tags.join(' · ')}</span></div>
+    </div>
+    <div class="angs">${angchips}</div>`;
+  el.querySelector('[data-up]').onclick=()=>{move(state.projOrder,idx,-1);renderProjects(mode);};
+  el.querySelector('[data-dn]').onclick=()=>{move(state.projOrder,idx,1);renderProjects(mode);};
+  el.querySelector('[data-inc]').onchange=e=>{
+    if(e.target.checked){st.inc.add(pid);
+      if(!(st.angles[pid]&&st.angles[pid].length))
+        st.angles[pid]=(mode==='resume')?p.variant_angles.slice(0,1):p.variant_angles.slice();
+    }else st.inc.delete(pid);
+    renderProjects(mode);
+  };
+  el.querySelectorAll('.angchip').forEach(c=>c.onclick=()=>{
+    const a=c.getAttribute('data-ang'), cur=st.angles[pid]||[];
+    const i=cur.indexOf(a); if(i>=0)cur.splice(i,1); else cur.push(a);
+    st.angles[pid]=cur; if(cur.length)st.inc.add(pid);
+    renderProjects(mode);
+  });
+  return el;
+}
+function renderProjects(mode){
+  const box=$(mode==='resume'?'#resProjects':'#portProjects'); if(!box)return; box.innerHTML='';
+  state.projOrder.forEach((pid,idx)=>box.appendChild(projectRow(mode,pid,idx)));
+}
+function renderSections(mode){
+  const chk=(sid,lab,set)=>{const l=document.createElement('label');l.className='chk';
+    l.innerHTML=`<input type="checkbox" ${set.has(sid)?'checked':''}> ${lab}`;
+    l.querySelector('input').onchange=e=>{e.target.checked?set.add(sid):set.delete(sid);};return l;};
+  if(mode==='resume'){
+    const pl=$('#resSections');pl.innerHTML='';
+    [['00_identity','정체성'],['01_skills','스킬'],['02_education','학력']].forEach(([s,l])=>pl.appendChild(chk(s,l,state.resume.plain)));
+    const ex=$('#resExp');ex.innerHTML='';
+    state.cat.experiences.forEach(e=>{const l=document.createElement('label');l.className='chk';
+      l.innerHTML=`<input type="checkbox" ${state.resume.exp.has(e.sid)?'checked':''}> ${esc(e.company_ko)} <span class="muted">(${e.sid.split('/')[1]})</span>`;
+      l.querySelector('input').onchange=ev=>{ev.target.checked?state.resume.exp.add(e.sid):state.resume.exp.delete(e.sid);};ex.appendChild(l);});
+  }else{
+    const pl=$('#portSections');pl.innerHTML='';
+    [['00_identity','정체성'],['90_appendix','부록']].forEach(([s,l])=>pl.appendChild(chk(s,l,state.portfolio.plain)));
+  }
+}
+function renderAssemble(){renderSections('resume');renderSections('portfolio');renderProjects('resume');renderProjects('portfolio');}
+$$('.subtabs button').forEach(b=>b.onclick=()=>{state.sub=b.dataset.sub;
+  $$('.subtabs button').forEach(x=>x.classList.toggle('on',x===b));
+  $('#sub-resume').style.display=state.sub==='resume'?'':'none';
+  $('#sub-portfolio').style.display=state.sub==='portfolio'?'':'none';});
+
+function currentProfile(){
+  const R=state.resume,P=state.portfolio;
+  const rinc=[]; if(R.plain.has('00_identity'))rinc.push('00_identity'); if(R.plain.has('01_skills'))rinc.push('01_skills');
+  state.cat.experiences.forEach(e=>{if(R.exp.has(e.sid))rinc.push(e.sid);});
+  if(R.plain.has('02_education'))rinc.push('02_education');
+  const rProj=state.projOrder.filter(p=>R.inc.has(p));
+  const rAng={}; rProj.forEach(p=>{if((R.angles[p]||[]).length)rAng[p]=R.angles[p];});
+  const pinc=[]; if(P.plain.has('00_identity'))pinc.push('00_identity');
+  state.projOrder.forEach(p=>{if(P.inc.has(p))pinc.push(pj(p).sid);});
+  if(P.plain.has('90_appendix'))pinc.push('90_appendix');
+  const pAng={}; state.projOrder.forEach(p=>{if(P.inc.has(p)&&(P.angles[p]||[]).length)pAng[p]=P.angles[p];});
+  return {name:$('#pName').value.trim(),target:$('#pTarget').value,lang:$('#pLang').value,
+    emphasis:state.cat.angles.map(a=>a.id),
+    resume:{include:rinc,project_order:rProj,project_angles:rAng,max_bullets_per_job:+$('#pMax').value},
+    portfolio:{include:pinc,project_angles:pAng,detail_level:$('#pDetail').value}};
+}
+$('#buildBtn').onclick=async()=>{
+  const prof=currentProfile();$('#asmMsg').textContent='조립 중…';
+  const r=await postJSON('/api/assemble',prof);
+  state.result=r; state.result.__target=prof.target;
+  $('#asmMsg').textContent='완료 ✓';
+  $('#asmWarn').innerHTML=(r.errors&&r.errors.length?`<div class="errs">검증 에러 ${r.errors.length}건: ${r.errors.slice(0,3).map(esc).join(' / ')}</div>`:'')
+    +(r.warnings&&r.warnings.length?r.warnings.map(esc).join('<br>'):'경고 없음');
+  fillPvLang();
+  $('#pvKind').value=(state.sub==='portfolio')?'portfolio':'resume';   // 조립한 서브탭에 맞춰 미리보기
+  renderPreview();switchTab('preview');
+};
+$('#saveProfBtn').onclick=async()=>{
+  const prof=currentProfile();
+  if(!prof.name){$('#asmMsg').textContent='이름을 입력하세요';return;}
+  const {name,...rest}=prof;
+  const r=await postJSON('/api/profile',{name,profile:rest});
+  $('#asmMsg').textContent=r.ok?`저장됨 → profiles/${name}.yaml`:'실패: '+(r.error||'');
+  if(r.ok){state.cat=await getJSON('/api/catalog');fillProfiles();}
+};
+$('#loadBtn').onclick=async()=>{
+  const name=$('#pLoad').value;if(!name)return;
+  const d=await getJSON('/api/profile?name='+encodeURIComponent(name));
+  if(d.error)return;applyProfile(name,d.profile);
+};
+function applyProfile(name,p){
+  $('#pName').value=name;$('#pTarget').value=p.target||'';$('#pLang').value=p.lang||'ko';
+  $('#pDetail').value=(p.portfolio||{}).detail_level||'full';$('#pMax').value=(p.resume||{}).max_bullets_per_job??6;
+  const R=state.resume,P=state.portfolio;
+  const rinc=(p.resume||{}).include||[];
+  R.plain=new Set(rinc.filter(s=>/00_identity|01_skills|02_education/.test(s)));
+  R.exp=new Set(rinc.filter(s=>s.startsWith('10_experience/')));
+  R.inc=new Set((p.resume||{}).project_order||[]);
+  R.angles=Object.assign({},(p.resume||{}).project_angles||{});
+  P.plain=new Set(((p.portfolio||{}).include||[]).filter(s=>!s.startsWith('20_projects/')));
+  const portIds=((p.portfolio||{}).include||[]).filter(s=>s.startsWith('20_projects/')).map(s=>s.split('/')[1]);
+  P.inc=new Set(portIds);
+  P.angles=Object.assign({},(p.portfolio||{}).project_angles||{});
+  const ro=(p.resume||{}).project_order||[], all=state.cat.projects.map(x=>x.id);
+  state.projOrder=[...ro,...portIds.filter(x=>!ro.includes(x)),...all.filter(x=>!ro.includes(x)&&!portIds.includes(x))];
+  renderAssemble();
+  $('#asmMsg').textContent=`불러옴: ${name}`;
+}
+
+/* ---------- PREVIEW / EXPORT ---------- */
+function fillPvLang(){
+  const sel=$('#pvLang');sel.innerHTML='';(state.result.langs||['ko']).forEach(l=>{const o=document.createElement('option');o.value=l;o.textContent=l;sel.appendChild(o);});
+}
+function previewHTML(){
+  if(!state.result)return '<div class="page muted" style="padding:40px">먼저 조립하세요.</div>';
+  const kind=$('#pvKind').value,lang=$('#pvLang').value||state.result.langs[0];
+  if(kind==='resume'){const rs=(state.result.resume_struct||{})[lang];
+    return `<style>${R1CSS}</style><div class="page">${resumeInner(rs)}</div>`;}
+  // 포트폴리오 = 디자인 버전
+  const idn=(state.result.identity||{})[lang];
+  const parts=(state.result.portfolio_parts||{})[lang]||[];
+  return `<style>${PFCSS}</style><div class="pf">${fancyInner(parts, idn, state.result.__target||'Portfolio', lang, (state.result.skills||{})[lang])}</div>`;
+}
+function renderPreview(){$('#preview').innerHTML=previewHTML();if($('#pvKind').value==='portfolio')pfInit($('#preview'));}
+$('#pvKind').onchange=renderPreview;$('#pvLang').onchange=renderPreview;
+
+function docWrap(inner,title,extraCSS){
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)}</title>
+  <style>body{font:14px/1.55 'Malgun Gothic','Segoe UI',sans-serif;color:#111;max-width:820px;margin:24px auto;padding:0 20px}
+  h1{font-size:24px;border-bottom:2px solid #222;padding-bottom:6px}h2{font-size:17px;color:#123}h3{font-size:15px}
+  table{border-collapse:collapse;width:100%;font-size:13px}th,td{border:1px solid #bbb;padding:5px 8px;text-align:left}th{background:#f3f5f8}
+  blockquote{border-left:3px solid #cbd5e1;color:#475569;padding:.3em .9em;background:#f8fafc}code{background:#eef1f5;padding:1px 5px;border-radius:4px}
+  .page{page-break-after:always}.page:last-child{page-break-after:auto}a{color:#1a56db}
+  ${extraCSS||''}</style></head><body>${inner}</body></html>`;
+}
+function download(name,html,type){const b=new Blob(['﻿'+html],{type});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click();}
+function currentDocParts(){
+  const kind=$('#pvKind').value,lang=$('#pvLang').value;
+  if(kind==='resume'){const rs=(state.result.resume_struct||{})[lang];
+    return {inner:`<div class="page">${resumeInner(rs)}</div>`,fn:`resume_${lang}`,css:R1CSS};}
+  const parts=(state.result.portfolio_parts||{})[lang]||[];
+  const inner=`<div class="page">${md2html('# Portfolio')}</div>`+parts.map(p=>`<div class="page">${md2html(p.md)}</div>`).join('');
+  return {inner,fn:`portfolio_${lang}`,css:''};
+}
+$('#exPrint').onclick=()=>{const kind=$('#pvKind').value,lang=$('#pvLang').value;
+  let doc; if(kind==='resume'){const {inner,css}=currentDocParts();doc=docWrap(inner,'print',css);} else {doc=fancyPortfolioDoc(lang);}
+  const w=window.open('','_print');w.document.write(doc);w.document.close();w.focus();setTimeout(()=>w.print(),350);};
+$('#exDoc').onclick=async()=>{
+  const kind=$('#pvKind').value, lang=$('#pvLang').value;
+  if(kind==='resume'){
+    // 진짜 .docx (Word 네이티브 서식 → Word/PDF 일관)
+    const r=await fetch('/api/resume_docx',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({profile:currentProfile(),lang})});
+    if(!r.ok){alert('docx 생성 실패');return;}
+    const blob=await r.blob();const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`resume_${lang}.docx`;a.click();
+  }else{
+    const {inner,fn,css}=currentDocParts();download(fn+'.doc',docWrap(inner,fn,css),'application/msword');
+  }
+};
+$('#exHtml').onclick=()=>{const kind=$('#pvKind').value,lang=$('#pvLang').value;
+  if(kind==='resume'){const {inner,fn,css}=currentDocParts();download(fn+'.html',docWrap(inner,fn,css),'text/html');}
+  else download(`portfolio_${lang}.html`, fancyPortfolioDoc(lang),'text/html');};
+
+/* ---------- tabs / init ---------- */
+function switchTab(t){$$('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
+  $$('.view').forEach(v=>v.classList.toggle('on',v.id==='view-'+t));}
+$$('.tabs button').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
+function fillProfiles(){const sel=$('#pLoad');sel.innerHTML='<option value="">— 선택 —</option>';state.cat.profiles.forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;sel.appendChild(o);});}
+
+async function init(){
+  state.cat=await getJSON('/api/catalog');
+  setStatus(`프로젝트 ${state.cat.projects.length} · 프로필 ${state.cat.profiles.length}`);
+  buildFileList();
+  state.resume={plain:new Set(['00_identity','01_skills','02_education']),exp:new Set(state.cat.experiences.map(e=>e.sid)),inc:new Set(),angles:{}};
+  state.portfolio={plain:new Set(['00_identity','90_appendix']),inc:new Set(),angles:{}};
+  state.projOrder=state.cat.projects.map(p=>p.id);
+  state.sub='resume';
+  fillProfiles();renderAssemble();
+}
+init();
+</script>
+</body>
+</html>

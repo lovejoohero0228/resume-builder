@@ -1,0 +1,15 @@
+%% C-arm 음성 제어 시스템 파이프라인
+flowchart TD
+  A[음성 입력] --> B["STT (Faster Whisper)<br/>FFmpeg 전처리 · 4s+ → &lt;0.4s"]
+  B --> C[NLU 하이브리드]
+  subgraph C[NLU 하이브리드]
+    C1[룰베이스 · 유사도 키워드 매칭]
+    C2[자모 분해 유사도 fallback]
+    C3[sLLM fallback]
+  end
+  C --> D{범위 · 확신도?}
+  D -->|in-domain 확실| E[커맨드 스키마]
+  D -->|범위 밖 · 불확실| F["거부/무시 또는 재질의<br/>(명령 종류별, UX 고려)"]
+  E --> G[모터 제어 → C-arm 물리 동작]
+  E -. 검증/개발 .-> H["3D-CAD 디지털 트윈<br/>(CAD + 내부 SW 인터페이스)"]
+  G --- I["C# 메인 프로세스<br/>WebSocket 연동 · Nuitka 패키징"]

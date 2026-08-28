@@ -1,0 +1,13 @@
+%% 5축 LLM·STT 평가 프레임워크
+flowchart LR
+  I["발화/명령<br/>(gold standard 400건)"] --> P[5축 채점]
+  subgraph P[5축 채점]
+    A1["CMD_KW<br/>커맨드 명확성"]
+    A2["COMPLETE<br/>파라미터 완전성"]
+    A3["INPUT_Q<br/>STT 입력 품질"]
+    A4["SCOPE<br/>지원 범위"]
+    A5["CTX_DEP<br/>컨텍스트 의존성"]
+  end
+  P --> R["축별 진단<br/>취약 조합 pinpoint"]
+  R --> M[모델 · 프롬프트 · 룰 표적 개선]
+  I -. 통제 변수 동일 .-> B["모델 비교<br/>STT/LLM (latency · CER)"]

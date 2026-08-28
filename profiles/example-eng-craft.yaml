@@ -1,0 +1,27 @@
+# 예시 프로필 2 — 엔지니어링/성능 강조, 영문. emphasis 전환·영문 파이프라인 확인용.
+name: example-eng-craft
+target: "Example / ML Engineer"
+lang: en
+
+emphasis:
+  - performance-optimization
+  - engineering-craft
+  - shipping-delivery
+
+resume:
+  include:
+    - 00_identity
+    - 01_skills
+    - 10_experience/e01
+    - 10_experience/e02
+    - 02_education
+  project_order: [p01, p05, p08]
+  max_bullets_per_job: 4
+
+portfolio:
+  include:
+    - 00_identity
+    - 20_projects/p01
+    - 20_projects/p05
+    - 90_appendix
+  detail_level: short

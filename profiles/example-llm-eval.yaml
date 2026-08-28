@@ -1,0 +1,28 @@
+# 예시 프로필 — LLM 평가 직무. 빌드 파이프라인 동작 확인용.
+name: example-llm-eval
+target: "예시 / LLM Evaluation Engineer"
+lang: ko
+
+emphasis:
+  - modeling-foundation
+  - ownership-e2e
+  - stakeholder-alignment
+
+resume:
+  include:
+    - 00_identity
+    - 01_skills
+    - 10_experience/e01
+    - 10_experience/e02
+    - 10_experience/e03
+    - 02_education
+  project_order: [p02, p01]
+  max_bullets_per_job: 4
+
+portfolio:
+  include:
+    - 00_identity
+    - 20_projects/p02
+    - 20_projects/p01
+    - 90_appendix
+  detail_level: full

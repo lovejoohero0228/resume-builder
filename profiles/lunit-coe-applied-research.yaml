@@ -1,0 +1,34 @@
+# Lunit / Applied Research Scientist · AI Innovation (Chain-of-Evidence)
+# JD 핵심: medical LLM · RAG · agentic · faithfulness/citation/hallucination 평가 · post-training · 배포 · 영어
+name: lunit-coe-applied-research
+target: "Lunit / Applied Research Scientist · AI Innovation (Chain-of-Evidence)"
+lang: both
+
+emphasis:
+  - modeling-foundation        # 평가 설계 (faithfulness/citation/hallucination) — 직무 핵심
+  - ownership-e2e              # build-and-ship, 빠른 PoC, e2e 소유
+  - engineering-craft          # RAG·파이프라인·테스트·자동화
+  - stakeholder-alignment      # 임상 파트너 협업, 영어
+
+resume:
+  include:
+    - 00_identity
+    - 01_skills
+    - 10_experience/e01
+    - 10_experience/e02
+    - 10_experience/e03
+    - 02_education
+  project_order: [p02, p09, p08, p01, p12, p13]
+  max_bullets_per_job: 4
+
+portfolio:
+  include:
+    - 00_identity
+    - 20_projects/p02           # 5축 LLM 평가 프레임워크
+    - 20_projects/p09           # 의료 RAG 챗봇 (환각 제어·출처 명시) = CoE 인접
+    - 20_projects/p08           # Text-to-SQL: RAG + sLLM 파인튜닝·양자화
+    - 20_projects/p01           # 음성 에이전트 (오케스트레이션→하이브리드), 배포
+    - 20_projects/p13           # 의료 비전 (breadth) + vision→LLM 요약
+    - 20_projects/p12           # 학습 데이터·평가 rigor (통계 샘플링)
+    - 90_appendix               # 공개 구현 GitHub 링크 포함
+  detail_level: full
