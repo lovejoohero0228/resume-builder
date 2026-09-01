@@ -64,6 +64,16 @@ career-master/
 └── dist/                 # 산출물 (gitignore)
 ```
 
+## 설치
+
+Python 3.9+ 와 패키지 2개(PyYAML · python-docx)가 필요하다. clone 후 한 번만:
+
+```bash
+pip install -r requirements.txt
+```
+
+> macOS/Linux/Windows 공통. 파일 입출력은 모두 UTF-8, 경로·한글 파일명(NFC)도 OS 무관하게 동작한다.
+
 ## 사용법
 
 ```bash
@@ -85,7 +95,8 @@ pandoc dist/<profile>/resume_ko.md -o resume.pdf
 ## GUI (웹 편집·조립·Export)
 
 브라우저에서 소스 편집 → 공고별 조립 → 미리보기 → Export까지 하는 로컬 도구.
-외부 의존성 없음 (파이썬 표준 라이브러리 + pyyaml).
+서버는 파이썬 표준 라이브러리 + PyYAML 로 동작하고, `.docx` 내보내기는 python-docx 를 쓴다
+(둘 다 `requirements.txt` 에 포함).
 
 ```bash
 python app/server.py          # http://127.0.0.1:8765  (Chrome 권장)
