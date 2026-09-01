@@ -143,6 +143,23 @@ class Handler(BaseHTTPRequestHandler):
                     data,
                     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                     f"resume_{lang}.docx")
+            if u.path == "/api/portfolio_pptx":
+                d = self._read_json()
+                profile = d.get("profile", {})
+                lang = d.get("lang") or profile.get("lang") or "ko"
+                if lang == "both":
+                    lang = "ko"
+                a = B.assemble(profile)
+                lg = lang if lang in a["langs"] else a["langs"][0]
+                parts = a["portfolio_parts"].get(lg, [])
+                identity = a["identity"].get(lg) or {}
+                target = a["resume_struct"].get(lg, {}).get("target", "")
+                import pptx_export
+                data, _warnings = pptx_export.portfolio_pptx_bytes(identity, target, parts, lg, ROOT)
+                return self._send_file(
+                    data,
+                    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                    f"portfolio_{lg}.pptx")
             if u.path == "/api/profile":
                 d = self._read_json()
                 name = d.get("name", "")

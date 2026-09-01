@@ -66,7 +66,7 @@ career-master/
 
 ## 설치
 
-Python 3.9+ 와 패키지 2개(PyYAML · python-docx)가 필요하다. clone 후 한 번만:
+Python 3.9+ 와 패키지 3개(PyYAML · python-docx · python-pptx)가 필요하다. clone 후 한 번만:
 
 ```bash
 pip install -r requirements.txt
@@ -106,7 +106,10 @@ python app/server.py          # http://127.0.0.1:8765  (Chrome 권장)
 - **공고 조립** 탭: emphasis(관점) 우선순위, 포함 경력·프로젝트를 체크로 선택. 각 프로젝트에
   현재 emphasis로 뽑힐 **뉘앙스(angle) 배지**가 실시간 표시. 프로필로 저장 가능.
 - **미리보기 · Export** 탭: 이력서(고정 포맷)·포트폴리오(프로젝트별 페이지)를 렌더.
-  인쇄/PDF 저장, `.doc`(Word), `.html` 내려받기.
+  인쇄/PDF 저장, `.doc`(Word), `.pptx`(PPT), `.html` 내려받기.
+  - PPT는 가로(16:9) 슬라이드로, 프로젝트 1개 = 슬라이드 1장(문제 정의 → 나의 역할 → 주요 성과,
+    분량에 맞춰 폰트가 자동으로 줄어들어 한 장에 다 들어간다). 다이어그램 이미지는 슬라이드 안에
+    끼워 넣지 않고 프로젝트 슬라이드 바로 뒤에 이미지 전용 슬라이드로 분리한다.
 
 ## 진행 단계 (Phase)
 

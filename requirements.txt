@@ -2,3 +2,4 @@
 #   pip install -r requirements.txt
 PyYAML>=6.0        # 빌드/서버: profiles·vocab YAML 파싱
 python-docx>=1.1   # 이력서 .docx 내보내기 (app/docx_export.py)
+python-pptx>=1.0   # 포트폴리오 .pptx 내보내기 (app/pptx_export.py)

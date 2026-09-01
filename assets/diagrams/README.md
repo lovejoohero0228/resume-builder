@@ -12,9 +12,9 @@
 const DIAGRAMS={
   p01:['ai voice system architecture.png'],
   p05:['Cephalometric Landmark Detection.png'],
-  p08:['Text to SQL- DARVIS.png','DARVIS DB통합.png'],   // 프로젝트당 여러 장 가능
-  p09:['RAG architecture.png','RAG 여성가족재단.png'],
-  p11:['Auto positioning.jpg','Auto positioning_2.jpg.png'],
+  p08:['Text2SQL Product UI.png','Text2SQL System Architecture.png','DARVIS DB통합.png'],   // 프로젝트당 여러 장 가능
+  p09:['RAG architecture.png'],
+  p11:['Auto positioning.jpg'],
   p12:['panorama labeling tool.png'],
   p13:['Dental Panoramic Radiograph Segmentation.png']
 };
@@ -26,11 +26,14 @@ const DIAGRAMS={
 |---|---|
 | p01 · C-arm 음성 제어 | `ai voice system architecture.png` |
 | p05 · Cephalo 랜드마크 | `Cephalometric Landmark Detection.png` |
-| p08 · Text-to-SQL (DARVIS) | `Text to SQL- DARVIS.png`, `DARVIS DB통합.png` |
-| p09 · RAG 챗봇 | `RAG architecture.png`, `RAG 여성가족재단.png` |
-| p11 · 오토포지셔닝 | `Auto positioning.jpg`, `Auto positioning_2.jpg.png` |
+| p08 · Text-to-SQL (DARVIS) | `Text2SQL Product UI.png`, `Text2SQL System Architecture.png`, `DARVIS DB통합.png` |
+| p09 · RAG 챗봇 | `RAG architecture.png` |
+| p11 · 오토포지셔닝 | `Auto positioning.jpg` |
 | p12 · 어노테이션 툴 | `panorama labeling tool.png` |
 | p13 · Panoramic 분할 | `Dental Panoramic Radiograph Segmentation.png` |
+
+> `DARVIS RAG Product UI.png` 는 아직 어느 프로젝트에도 매핑돼 있지 않습니다 (p08/p09 중 어디에 붙일지
+> 애매해 자동으로 넣지 않았습니다) — 필요하면 위 표와 `DIAGRAMS` 상수에 직접 추가해주세요.
 
 ## 이미지 추가 / 교체
 
@@ -41,7 +44,8 @@ const DIAGRAMS={
 
 ## 팁
 
-- 여러 장일 때 캡션은 파일명에서 자동 생성되고, 한 장이면 프로젝트 제목이 붙습니다.
+- 프로젝트 카드 썸네일(갤러리)에는 첫 번째 이미지가 대표 이미지로 표시됩니다.
+- 이미지에는 별도의 캡션을 표시하지 않습니다 (alt 텍스트만 내부적으로 유지).
 - 이미지 클릭 시 새 탭에서 원본이 열립니다.
 - 가로로 긴 다이어그램은 카드 폭에 맞춰 자동 축소됩니다. 가독성을 위해 **가로 1200~1600px** 권장.
 - 지원 형식: `png` · `jpg` · `jpeg` · `webp` · `svg` · `gif`.
