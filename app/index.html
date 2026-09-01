@@ -71,6 +71,49 @@
   .subtabs{display:flex;gap:6px;margin-bottom:14px}
   .subtabs button{background:var(--panel2);color:var(--mut);border:1px solid var(--line);border-radius:9px;padding:8px 18px;cursor:pointer;font-weight:600;font-size:14px}
   .subtabs button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+  /* 조립: 좌 선택 / 우 순서 미리보기 2분할 */
+  .asm-split{display:flex;gap:0;flex:1;min-height:0}
+  .asm-select,.asm-preview{flex:1 1 50%;min-width:0;overflow:auto;padding:2px 14px 8px}
+  .asm-select{padding-left:2px}
+  .asm-preview{border-left:1px solid var(--line)}
+  .pane-cap{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:800;color:var(--fg);position:sticky;top:0;background:var(--panel);padding:6px 0 10px;margin-bottom:2px;z-index:3;border-bottom:1px solid var(--line)}
+  .capnote{font-weight:400;color:var(--mut);font-size:11.5px;margin-left:2px}
+  .sel-h,.pv-h{display:flex;align-items:center;gap:7px;font-size:12px;letter-spacing:.02em;color:var(--fg);margin:16px 0 8px;font-weight:800}
+  .sel-h::before,.pv-h::before{content:'';width:3px;height:13px;border-radius:2px;background:var(--acc);flex:0 0 auto}
+  .sel-h:first-child,.pv-h:first-child{margin-top:6px}
+  .selgrid{display:flex;flex-wrap:wrap;gap:6px}
+  .draglist{display:flex;flex-direction:column;gap:6px;min-height:34px;border-radius:10px}
+  .draglist.dragover{outline:1.5px dashed var(--acc);outline-offset:3px}
+  .draglist.empty{border:1px dashed var(--line);align-items:center;justify-content:center}
+  .draglist.empty::after{content:'← 왼쪽에서 체크하면 여기 표시';color:#5b6270;font-size:12px;padding:9px}
+  .dragcard{display:flex;align-items:center;gap:9px;background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:7px 9px 7px 11px;cursor:grab;font-size:13.5px;transition:border-color .12s,box-shadow .12s,opacity .12s}
+  .dragcard:hover{border-color:#3d6bb0;box-shadow:0 2px 10px rgba(0,0,0,.25)}
+  .dragcard.dragging{opacity:.35;cursor:grabbing}
+  .dragcard.isoff{opacity:.5;background:var(--panel)}
+  .dragcard.isoff .dc-title{text-decoration:line-through;text-decoration-color:var(--mut)}
+  .dragcard .gh{color:#5f6b7a;font-size:14px;cursor:grab;line-height:1;letter-spacing:-2px;flex:0 0 auto}
+  .dragcard .dc-body{flex:1;min-width:0}
+  .dragcard .dc-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .dragcard .dc-sub{font-size:11.5px;color:var(--mut);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* 태그(비클릭): 알약 아님을 분명히 — 각지고, hover·cursor 없음 */
+  .dragcard .dc-kind{font-size:10px;font-weight:700;color:var(--mut);background:transparent;border:0;border-left:2px solid var(--line);border-radius:0;padding:0 0 0 8px;flex:0 0 auto;cursor:default;text-transform:uppercase;letter-spacing:.04em}
+  .dragcard .dc-kind.exp{color:#9dc0f0;border-left-color:#3d6bb0}
+  /* mini 버튼: 실제 버튼처럼 */
+  .dragcard .mini{flex:0 0 auto;border:1px solid var(--line);background:var(--panel);color:var(--mut);border-radius:6px;cursor:pointer;font-size:10.5px;font-weight:700;line-height:1;padding:4px 7px;transition:.12s}
+  .dragcard .mini:hover{border-color:var(--acc);color:var(--fg);background:var(--panel2)}
+  .dragcard .bexp{color:var(--acc);padding:4px 6px;font-size:11px}
+  .dragcard .beye.on{border-color:var(--warn);color:var(--warn)}
+  .dragcard .bexcl:hover{border-color:var(--bad);color:var(--bad)}
+  /* 불렛 편집 패널 */
+  .bulletpanel{margin:-1px 0 6px 20px;border-left:2px solid var(--acc);padding:8px 0 10px 12px;background:linear-gradient(90deg,rgba(91,157,255,.06),transparent 60%);border-radius:0 8px 8px 0}
+  .bp-head{font-size:11px;color:var(--acc);margin:6px 0 7px;font-weight:800;letter-spacing:.02em}
+  .bp-head:first-child{margin-top:0}
+  .bp-load{font-size:12px;color:var(--mut);padding:6px 2px;line-height:1.5}
+  .draglist.bullets{gap:5px}
+  .dragcard.bcard{background:var(--panel);padding:7px 8px 7px 10px;font-size:12.5px;align-items:flex-start}
+  .dragcard.bcard .gh{margin-top:1px}
+  .dragcard.bcard .dc-title{white-space:normal;line-height:1.45}
+  .dragcard.bcard .dc-kind,.dragcard.bcard .mini{margin-top:1px}
   .prow{border:1px solid var(--line);border-radius:10px;padding:9px 11px;margin:7px 0;background:var(--panel)}
   .prow.inc{border-color:#3d6bb0;background:#141c28}
   .prow .ptop{display:flex;align-items:center;gap:9px}
@@ -125,23 +168,39 @@
       <div id="asmWarn" class="warns" style="margin-top:8px"></div>
     </div>
 
-    <div class="col grow">
+    <div class="col grow" style="display:flex;flex-direction:column;min-height:0">
       <div class="subtabs">
         <button data-sub="resume" class="on">📄 이력서</button>
         <button data-sub="portfolio">📁 포트폴리오</button>
       </div>
-      <div id="sub-resume">
-        <h2>포함 섹션</h2><div id="resSections" class="row"></div>
-        <h2 style="margin-top:12px">경력</h2><div id="resExp"></div>
-        <h2 style="margin-top:12px">프로젝트 — 포함 &amp; 사용할 관점 선택</h2>
-        <p class="muted" style="margin:.2em 0 .6em">체크 = 포함 · 관점 칩을 눌러 <b>복수 선택</b>(선택 관점마다 이력서 bullet 1개) · ↑↓ 순서</p>
-        <div id="resProjects"></div>
-      </div>
-      <div id="sub-portfolio" style="display:none">
-        <h2>포함 섹션</h2><div id="portSections" class="row"></div>
-        <h2 style="margin-top:12px">프로젝트 — 포함 &amp; 강조 관점(카드 칩)</h2>
-        <p class="muted" style="margin:.2em 0 .6em">체크 = 포함 · 관점 칩은 카드 상단에 표시됨 · ↑↓ 순서</p>
-        <div id="portProjects"></div>
+      <div class="asm-split">
+        <!-- 좌: 선택 -->
+        <div class="asm-select">
+          <div class="pane-cap">✓ 담을 내용 선택</div>
+          <div id="sub-resume-sel">
+            <div class="sel-h">섹션</div><div id="resSecSel" class="selgrid"></div>
+            <div class="sel-h">경력</div><div id="resExpSel" class="selgrid"></div>
+            <div class="sel-h">프로젝트 <span class="capnote">체크 = 포함 · 관점 칩 <b>복수 선택</b></span></div>
+            <div id="resProjSel"></div>
+          </div>
+          <div id="sub-portfolio-sel" style="display:none">
+            <div class="sel-h">섹션</div><div id="portSecSel" class="selgrid"></div>
+            <div class="sel-h">프로젝트 <span class="capnote">체크 = 포함 · 강조 관점 칩</span></div>
+            <div id="portProjSel"></div>
+          </div>
+        </div>
+        <!-- 우: 순서 미리보기 -->
+        <div class="asm-preview">
+          <div class="pane-cap">⇅ 순서 미리보기 <span class="capnote">드래그로 순서 변경</span></div>
+          <div id="sub-resume-pv">
+            <div class="pv-h">문서 블록 <span class="capnote">경력 카드의 ▸ 로 불렛 순서 편집</span></div>
+            <div id="resBlockPv" class="draglist"></div>
+          </div>
+          <div id="sub-portfolio-pv" style="display:none">
+            <div class="pv-h">문서 섹션</div><div id="portBlockPv" class="draglist"></div>
+            <div class="pv-h">프로젝트 카드</div><div id="portProjPv" class="draglist"></div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -252,7 +311,7 @@ function problemDef(bodyMd){
 }
 // 나의 역할 그룹 → 위계 불렛 (라벨=상위, items=하위 불렛)
 function roleGroupsHtml(groups){
-  return (groups||[]).map(g=>{
+  return (groups||[]).filter(g=>!g.hidden).map(g=>{
     if(g.label){
       const subs=(g.items||[]).map(t=>`<div class="kpoint sub">${mb(t)}</div>`).join('');
       return `<div class="kgroup">${esc(g.label)}</div>${subs}`;
@@ -280,34 +339,41 @@ function roleTagHtml(role,isKo){
 // 문제 정의 → 풀고자 한 문제 / 제약·난점 2분할
 function problemHtml(pb,isKo){
   const row=(lab,txt)=>txt?`<div class="pdsub"><span class="pdlabel">${lab}</span><div class="pdbody">${isKo?md2html(txt):`<p>${mb(txt)}</p>`}</div></div>`:'';
-  return row(isKo?'풀고자 한 문제':'Goal', pb.goal)+row(isKo?'제약 · 난점':'Constraints & hurdles', pb.hurdle);
+  return row(isKo?'풀고자 한 문제':'Goal', pb.goal)+row(isKo?'제약과 어려움':'Constraints & hurdles', pb.hurdle);
 }
 function resumeInner(rs){
   if(!rs) return '<div class="r1">데이터 없음 — 조립하세요.</div>';
   const L=(rs.lang==='ko')?{p:'프로필',s:'기술 스택',e:'경력'}:{p:'Profile',s:'Technical Skills',e:'Experience'};
-  const id=rs.identity||{}; let h='<div class="r1">';
-  if(rs.identity){
-    h+=`<div class="name">${esc(id.name||'')}</div>`;
-    if(id.tagline)h+=`<div class="tag">${esc(id.tagline)}</div>`;
-    if(id.contact)h+=`<div class="contact">${esc(id.contact)}</div>`;
-    if(id.summary)h+=`<h2>${L.p}</h2><p class="prof">${mb(id.summary)}</p>`;
-  }
-  if(rs.skills&&rs.skills.length){h+=`<h2>${L.s}</h2>`;
-    rs.skills.forEach(s=>h+=`<div class="skill">${s.label?`<b>${esc(s.label)}</b>&nbsp;&nbsp;`:''}${mb(s.rest)}</div>`);
-  }
-  if(rs.experiences&&rs.experiences.length){h+=`<h2>${L.e}</h2>`;
-    rs.experiences.forEach(e=>{
-      const meta=[e.title,e.period,e.location].filter(Boolean).map(esc).join(' · ');
-      h+=`<div class="job"><span class="co">${esc(e.company)}</span>${meta?` <span class="meta">— ${meta}</span>`:''}`;
-      if(e.context)h+=`<div class="ti">${mb(e.context)}</div>`;
-      if(e.bullets&&e.bullets.length)h+='<ul>'+e.bullets.map(b=>`<li>${mb(b)}</li>`).join('')+'</ul>';
-      h+='</div>';
-    });
-  }
-  (rs.education||[]).forEach(g=>{
-    h+=`<h2>${esc(g.title)}</h2>`;
-    g.items.forEach(it=>h+=`<div class="edu${it.sub?' sub':''}">${mb(it.text)}</div>`);
-  });
+  const id=rs.identity||{};
+  const blk={
+    identity(){ if(!rs.identity)return '';
+      let s=`<div class="name">${esc(id.name||'')}</div>`;
+      if(id.tagline)s+=`<div class="tag">${esc(id.tagline)}</div>`;
+      if(id.contact)s+=`<div class="contact">${esc(id.contact)}</div>`;
+      if(id.summary)s+=`<h2>${L.p}</h2><p class="prof">${mb(id.summary)}</p>`;
+      return s;
+    },
+    skills(){ const vis=(rs.skills||[]).filter(s=>!s.hidden); if(!vis.length)return '';
+      return `<h2>${L.s}</h2>`+vis.map(s=>`<div class="skill">${s.label?`<b>${esc(s.label)}</b>&nbsp;&nbsp;`:''}${mb(s.rest)}</div>`).join('');
+    },
+    education(){ return (rs.education||[]).map(g=>
+      `<h2>${esc(g.title)}</h2>`+g.items.map(it=>`<div class="edu${it.sub?' sub':''}">${mb(it.text)}</div>`).join('')).join('');
+    }
+  };
+  const exps=rs.experiences||[]; let ei=0, expHeader=false;
+  const expBlock=()=>{ if(ei>=exps.length)return '';
+    const e=exps[ei++]; let s='';
+    if(!expHeader){s+=`<h2>${L.e}</h2>`;expHeader=true;}
+    const meta=[e.title,e.period,e.location].filter(Boolean).map(esc).join(' · ');
+    s+=`<div class="job"><span class="co">${esc(e.company)}</span>${meta?` <span class="meta">— ${meta}</span>`:''}`;
+    if(e.context)s+=`<div class="ti">${mb(e.context)}</div>`;
+    if(e.bullets&&e.bullets.length)s+='<ul>'+e.bullets.map(b=>`<li>${mb(b)}</li>`).join('')+'</ul>';
+    return s+'</div>';
+  };
+  let order=(rs.order&&rs.order.length)?rs.order:['identity','skills','experience','education'];
+  if(order.indexOf('experience')<0&&exps.length)order=order.concat(Array(exps.length).fill('experience'));
+  let h='<div class="r1">';
+  order.forEach(tok=>{ h+= tok==='experience'?expBlock():(blk[tok]?blk[tok]():''); });
   return h+'</div>';
 }
 
@@ -318,16 +384,33 @@ const KEYWORDS=["E2E 오너십","빠른 학습","self-motivation","문제 정의
 const PFCSS=`
 .pf{--pri:#1e3a8a;--pri-ink:#1b3168;--pri-deep:#101d40;--ink:#1f2937;--mut:#6b7480;--tint:#eef1fb;--chip:#e0e6f6;--line:#e5e8f1;--bg:#edeff4;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'Pretendard','Apple SD Gothic Neo','Segoe UI',Roboto,'Malgun Gothic',sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
 .pf-shell{display:flex;max-width:1200px;margin:0 auto}
-.side{position:sticky;top:0;align-self:flex-start;height:100vh;flex:0 0 236px;background:#fff;border-right:1px solid var(--line);padding:26px 16px;overflow:auto}
-.side-name{font-weight:800;font-size:18px}
-.side-role{font-size:11.5px;color:var(--mut);margin:3px 0 18px;line-height:1.45}
-.side nav{display:flex;flex-direction:column}
-.tocitem{display:flex;gap:9px;align-items:baseline;font-size:13px;color:var(--mut);text-decoration:none;padding:8px 10px;border-radius:9px;margin:1px 0;border-left:2px solid transparent;line-height:1.35;transition:.12s}
-.tocitem .num{font-variant-numeric:tabular-nums;color:#b3bcc7;font-weight:800;font-size:11px;min-width:16px}
-.tocitem:hover{background:var(--tint);color:var(--ink)}
-.tocitem.on{background:var(--tint);color:var(--pri-ink);font-weight:700;border-left-color:var(--pri)}
-.tocitem.on .num{color:var(--pri)}
-.tocitem.sub{font-size:12.5px}
+.side{position:sticky;top:0;align-self:flex-start;height:100vh;flex:0 0 250px;background:linear-gradient(190deg,#ffffff 0%,#fbfcfe 55%,#f6f8fd 100%);border-right:1px solid var(--line);overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column}
+.side::-webkit-scrollbar{width:7px}
+.side::-webkit-scrollbar-thumb{background:#dfe3ee;border-radius:99px;border:2px solid transparent;background-clip:padding-box}
+.side::-webkit-scrollbar-thumb:hover{background:#c8cee0;background-clip:padding-box}
+.side-head{position:relative;padding:26px 20px 20px;overflow:hidden}
+.side-head::after{content:'';position:absolute;left:20px;right:20px;bottom:0;height:1px;background:linear-gradient(90deg,var(--pri),transparent)}
+.side-ava{width:48px;height:48px;border-radius:15px;background:linear-gradient(135deg,var(--pri),#4a6bd0 55%,#6d8ce0);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;letter-spacing:-.02em;box-shadow:0 8px 20px rgba(30,58,138,.32);margin-bottom:13px}
+.side-name{font-weight:800;font-size:18.5px;letter-spacing:-.01em;color:#141b2e}
+.side-role{font-size:11.5px;color:var(--mut);margin:5px 0 0;line-height:1.5;font-weight:500}
+.side nav{display:flex;flex-direction:column;padding:16px 12px 26px;position:relative}
+.side-label{font-size:9.5px;font-weight:800;letter-spacing:.14em;color:#a7afc0;text-transform:uppercase;padding:0 12px;margin:16px 0 7px;display:flex;align-items:center;gap:8px}
+.side-label:first-child{margin-top:2px}
+.side-label::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+.tocitem{display:flex;gap:10px;align-items:center;font-size:13px;color:#5a6472;text-decoration:none;padding:8px 12px;border-radius:11px;margin:1px 0;line-height:1.3;position:relative;transition:background .16s,color .16s,transform .16s}
+.tocitem .dot{width:6px;height:6px;border-radius:50%;background:#c7cedb;flex:0 0 auto;transition:.16s}
+.tocitem .num{font-variant-numeric:tabular-nums;color:#aeb6c4;font-weight:800;font-size:10.5px;min-width:20px;height:20px;display:flex;align-items:center;justify-content:center;border-radius:7px;background:#eef1f7;flex:0 0 auto;transition:.16s}
+.tocitem .txt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tocitem:hover{background:var(--tint);color:var(--pri-ink);transform:translateX(2px)}
+.tocitem:hover .dot{background:var(--pri);box-shadow:0 0 0 4px var(--tint)}
+.tocitem:hover .num{background:var(--chip);color:var(--pri-ink)}
+.tocitem.on{background:linear-gradient(135deg,var(--pri),#33509e);color:#fff;font-weight:700;box-shadow:0 8px 18px rgba(30,58,138,.28)}
+.tocitem.on .dot{background:#fff;box-shadow:0 0 0 4px rgba(255,255,255,.22)}
+.tocitem.on .num{background:rgba(255,255,255,.22);color:#fff}
+.tocitem.on:hover{color:#fff;transform:translateX(2px)}
+.tocitem.sub{font-size:12.5px;margin-left:9px;padding-left:14px}
+.side nav .subwrap{position:relative}
+.side nav .subwrap::before{content:'';position:absolute;left:22px;top:6px;bottom:10px;width:1.5px;background:linear-gradient(180deg,var(--chip),transparent)}
 .main{flex:1;min-width:0;max-width:900px;padding:26px 30px}
 .card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:30px 34px;margin:0 0 20px;box-shadow:0 1px 2px rgba(16,24,40,.03),0 8px 22px rgba(16,24,40,.04);scroll-margin-top:14px}
 .about{background:var(--pri);color:#fff;border:0;box-shadow:0 12px 30px rgba(30,58,138,.28)}
@@ -367,10 +450,15 @@ const PFCSS=`
 .chip{font-size:11.5px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--chip);color:var(--pri-ink)}
 .chip.acc{background:var(--pri);color:#fff}
 .lead{font-size:15px;font-weight:600;color:#37505f;background:var(--tint);border-left:3px solid var(--pri);padding:13px 16px;border-radius:0 12px 12px 0;margin:16px 0}
-.figure{border:1.5px dashed #c3c9e6;border-radius:14px;min-height:190px;background:var(--tint);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#8b93bd;margin:0 0 18px;font-size:26px}
-.figure .fmid{font-size:13px;font-weight:600}
-.figure .fcap{font-size:12px;color:#a7adcf;font-weight:500}
-.kh{font-size:11.5px;font-weight:800;color:var(--pri-ink);letter-spacing:.05em;margin:16px 0 8px}
+.figure{margin:0 0 18px}
+.fig-ph{border:1.5px dashed #c3c9e6;border-radius:14px;min-height:190px;background:var(--tint);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#8b93bd;font-size:26px}
+.fig-ph .fmid{font-size:13px;font-weight:600}
+.fig-ph .fcap{font-size:12px;color:#a7adcf;font-weight:500}
+.figure.has-img{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 6px 20px rgba(16,24,40,.06)}
+.figimg{display:block;width:100%;height:auto;cursor:zoom-in}
+.fcap2{font-size:12px;color:var(--mut);text-align:center;padding:9px 12px;background:var(--tint);border-top:1px solid var(--line);margin:0}
+.kh{display:flex;align-items:center;gap:9px;font-size:14.5px;font-weight:800;color:var(--pri-ink);letter-spacing:-.01em;margin:24px 0 12px;padding-bottom:8px;border-bottom:1.5px solid var(--tint)}
+.kh::before{content:'';width:4px;height:16px;border-radius:2px;background:var(--pri);flex:0 0 auto}
 .pdef{margin:0 0 4px;font-size:14px;line-height:1.65;color:#37455a}
 .pdef p:first-child{margin-top:0}
 .pdsub{margin:0 0 10px}
@@ -429,6 +517,20 @@ const PFCSS=`
 `;
 function pfInit(root){
   root=root||document;
+  // 프로젝트 다이어그램 로드: 성공 시 placeholder 교체, 실패면 placeholder 유지
+  root.querySelectorAll('.figure[data-src]').forEach(function(fig){
+    var src=fig.getAttribute('data-src'),cap=fig.getAttribute('data-cap')||'';
+    var img=new Image();
+    img.onload=function(){
+      fig.classList.add('has-img');fig.textContent='';
+      img.className='figimg';img.setAttribute('alt',cap);
+      img.addEventListener('click',function(){window.open(img.src,'_blank');});
+      fig.appendChild(img);
+      if(cap){var c=document.createElement('figcaption');c.className='fcap2';c.textContent=cap;fig.appendChild(c);}
+    };
+    img.onerror=function(){/* 파일 없으면 placeholder 유지 */};
+    img.src=src;
+  });
   var bars=root.querySelectorAll('.bfill');
   var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.style.width=(e.target.getAttribute('data-pct')||0)+'%';io.unobserve(e.target);}});},{threshold:.25});
   bars.forEach(function(b){io.observe(b);});
@@ -441,13 +543,45 @@ function pfInit(root){
   var fb=[].slice.call(root.querySelectorAll('.filters button')),th=[].slice.call(root.querySelectorAll('.thumb'));
   fb.forEach(function(b){b.addEventListener('click',function(){fb.forEach(function(x){x.classList.remove('on');});b.classList.add('on');var f=b.getAttribute('data-filter');th.forEach(function(t){var tags=t.getAttribute('data-tags')||'';t.style.display=(f==='*'||tags.indexOf('|'+f+'|')>=0)?'':'none';});});});
 }
-function fancyInner(parts, idn, target, lang, skills){
+// 프로젝트별 다이어그램 매핑 — assets/diagrams/ 안의 실제 파일명. 프로젝트당 1개 이상 지원.
+// 파일이 있으면 pfInit이 로드해 placeholder 를 교체, 없으면 placeholder 유지.
+const DIAGRAMS={
+  p01:['ai voice system architecture.png'],
+  p05:['Cephalometric Landmark Detection.png'],
+  p08:['Text to SQL- DARVIS.png','DARVIS DB통합.png'],
+  p09:['RAG architecture.png','RAG 여성가족재단.png'],
+  p11:['Auto positioning.jpg','Auto positioning_2.jpg.png'],
+  p12:['panorama labeling tool.png'],
+  p13:['Dental Panoramic Radiograph Segmentation.png']
+};
+// 파일명 → 사람이 읽을 캡션 (확장자 제거·언더스코어 정리)
+function diagCap(fn){
+  return fn.replace(/\.(png|jpe?g|webp|svg|gif)$/i,'')
+           .replace(/\.(png|jpe?g|webp|svg|gif)$/i,'')
+           .replace(/_/g,' ').replace(/\s+/g,' ').trim();
+}
+function figureHtml(p, isKo){
+  const ORIGIN=(typeof location!=='undefined')?location.origin:'';
+  const files=DIAGRAMS[p.id]||[];
+  if(!files.length){
+    const cap=esc(p.title);
+    const ph=`<div class="fig-ph"><div>🖼</div><div class="fmid">${isKo?'이미지 / 다이어그램 자리':'image / diagram'}</div><div class="fcap">${cap}</div></div>`;
+    return `<figure class="figure">${ph}</figure>`;
+  }
+  return files.map(function(fn){
+    const src=ORIGIN+'/assets/diagrams/'+encodeURIComponent(fn);
+    const cap=esc(files.length>1?diagCap(fn):p.title);   // 여러 장이면 파일명으로 구분
+    const ph=`<div class="fig-ph"><div>🖼</div><div class="fmid">${isKo?'이미지 / 다이어그램':'image / diagram'}</div><div class="fcap">${cap}</div></div>`;
+    return `<figure class="figure" data-src="${src}" data-cap="${cap}">${ph}</figure>`;
+  }).join('');
+}
+function fancyInner(parts, idn, target, lang, skills, order){
   idn=idn||{}; const isKo=lang!=='en';
+  order=(order&&order.length)?order.slice():['about','skills','projects','appendix'];
   const projects=parts.filter(p=>p.kind==='project');
   const allTags=[]; projects.forEach(p=>(p.tags||[]).forEach(t=>{if(!allTags.includes(t))allTags.push(t);}));
-  let nav=`<a class="tocitem" href="#about"><span class="num">·</span>${isKo?'소개':'About'}</a>`
-        +`<a class="tocitem" href="#stack"><span class="num">·</span>${isKo?'기술 스택':'Skills'}</a>`
-        +`<a class="tocitem" href="#gallery"><span class="num">·</span>${isKo?'프로젝트':'Projects'}</a>`;
+  const topItem=(href,label)=>`<a class="tocitem" href="#${href}"><span class="dot"></span><span class="txt">${label}</span></a>`;
+  let navProjects='', appendixHtml='', appendixNav='';
   let thumbs='', details='', pnum=0;
   parts.forEach(p=>{
     if(p.sid==='00_identity')return;
@@ -458,7 +592,7 @@ function fancyInner(parts, idn, target, lang, skills){
       const meta=[p.org,p.period].filter(Boolean).map(esc).join('  ·  ');
       const pts=p.points||[];
       const lead=pts.length?pts[0].text:trimLead(p.short||'');
-      const roleG=p.role_groups||[], impact=p.impact||[];
+      const roleG=(p.role_groups||[]).filter(g=>!g.hidden), impact=(p.impact||[]).filter(f=>!f.hidden);
       const roleShort=(p.role||'').split(/[(（]/)[0].trim();
       const pdRaw=problemDef(p.body_md||'');
       const problem=isKo?(pdRaw||p.short||''):(p.short||pdRaw||'');
@@ -479,16 +613,16 @@ function fancyInner(parts, idn, target, lang, skills){
         ${(p.problem&&(p.problem.goal||p.problem.hurdle))
             ?`<div class="kh">${L.prob}</div>${problemHtml(p.problem,isKo)}`
             :(problem?`<div class="kh">${L.prob}</div><div class="cbody pdef">${isKo?md2html(problem):`<p>${mb(problem)}</p>`}</div>`:'')}
-        <div class="figure"><div>🖼</div><div class="fmid">${isKo?'이미지 / 다이어그램 자리':'image / diagram'}</div><div class="fcap">${esc(p.title)}</div></div>
+        ${figureHtml(p, isKo)}
         ${roleG.length?`<div class="kh">${L.role}</div>${roleTagHtml(p.role,isKo)}${roleGroupsHtml(roleG)}`:''}
         ${impact.length?`<div class="kh">${L.imp}</div>${impact.map(f=>f.kind==='metric'?`<div class="impact">${mb(f.value)}</div>`:`<div class="kpoint">${mb(f.value)}</div>`).join('')}`:''}
       </section>`;
-      nav+=`<a class="tocitem sub" href="#${id}"><span class="num">${num}</span>${esc(p.title)}</a>`;
+      navProjects+=`<a class="tocitem sub" href="#${id}"><span class="num">${num}</span><span class="txt">${esc(p.title)}</span></a>`;
     }else{
       const id='pf-appendix';
       const label=isKo?'부록':'Appendix';
-      details+=`<section class="card" id="${id}"><div class="cbody">${md2html(p.md)}</div></section>`;
-      nav+=`<a class="tocitem" href="#${id}"><span class="num">·</span>${label}</a>`;
+      appendixHtml+=`<section class="card" id="${id}"><div class="cbody">${md2html(p.md)}</div></section>`;
+      appendixNav=topItem(id, label);
     }
   });
   const about=`<section class="card about" id="about">
@@ -497,12 +631,30 @@ function fancyInner(parts, idn, target, lang, skills){
     <div class="persona">${esc(PERSONA)}</div>
     <div class="kw">${KEYWORDS.map(k=>`<span>${esc(k)}</span>`).join('')}</div>
     ${idn.contact?`<div class="contact">${mb(idn.contact)}</div>`:''}</section>`;
-  const skgroups=(skills||[]).map(s=>`<div class="skgroup"><div class="skhead"><span class="skdot"></span>${esc(s.label||'')}</div><div class="skchips">${(s.rest||'').split(/\s*·\s*/).filter(Boolean).map(x=>`<span class="skchip">${esc(x)}</span>`).join('')}</div></div>`).join('');
+  const skgroups=(skills||[]).filter(s=>!s.hidden).map(s=>`<div class="skgroup"><div class="skhead"><span class="skdot"></span>${esc(s.label||'')}</div><div class="skchips">${(s.rest||'').split(/\s*·\s*/).filter(Boolean).map(x=>`<span class="skchip">${esc(x)}</span>`).join('')}</div></div>`).join('');
   const stack=skgroups?`<section class="card" id="stack"><div class="sec-title">${isKo?'기술 스택':'SKILLS'}</div><div class="stack">${skgroups}</div></section>`:'';
   const filters=`<div class="filters"><button class="on" data-filter="*">${isKo?'전체':'All'}</button>${allTags.map(t=>`<button data-filter="${esc(t)}">${esc(t)}</button>`).join('')}</div>`;
   const gallery=`<section class="card" id="gallery"><div class="sec-title">${isKo?'프로젝트':'PROJECTS'}</div>${filters}<div class="grid">${thumbs}</div></section>`;
-  const side=`<aside class="side"><div class="side-name">${esc(idn.name||'')}</div><div class="side-role">${esc(target||'')}</div><nav>${nav}</nav></aside>`;
-  return `<div class="pf-shell">${side}<main class="main">${about}${stack}${gallery}${details}</main></div><a class="totop" href="#" title="맨 위로">↑</a>`;
+  const projectsMain=projects.length?(gallery+details):'';
+  const projectsNav=projects.length?(topItem('gallery', isKo?'프로젝트':'Projects')+(navProjects?`<div class="subwrap">${navProjects}</div>`:'')):'';
+  const mainMap={about:about, skills:stack, projects:projectsMain, appendix:appendixHtml};
+  const navMap ={about:topItem('about', isKo?'소개':'About'),
+                 skills:(stack?topItem('stack', isKo?'기술 스택':'Skills'):''),
+                 projects:projectsNav, appendix:appendixNav};
+  const mainHtml=order.map(t=>mainMap[t]||'').join('');
+  const nav=order.map(t=>navMap[t]||'').join('');
+  const nm=(idn.name||'').trim();
+  const initials=(nm.split(/\s+/).length>1
+      ? nm.split(/\s+/).slice(0,2).map(w=>w[0]).join('')
+      : nm.slice(0,2)).toUpperCase();
+  const side=`<aside class="side">
+    <div class="side-head">
+      <div class="side-ava">${esc(initials||'·')}</div>
+      <div class="side-name">${esc(nm)}</div>
+      <div class="side-role">${esc(target||'')}</div>
+    </div>
+    <nav>${nav}</nav></aside>`;
+  return `<div class="pf-shell">${side}<main class="main">${mainHtml}</main></div><a class="totop" href="#" title="맨 위로">↑</a>`;
 }
 function fancyDoc(inner,title){
   return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>
@@ -512,7 +664,7 @@ function fancyDoc(inner,title){
 function fancyPortfolioDoc(lang){
   const idn=(state.result.identity||{})[lang];
   const parts=(state.result.portfolio_parts||{})[lang]||[];
-  return fancyDoc(fancyInner(parts, idn, state.result.__target||'Portfolio', lang, (state.result.skills||{})[lang]), 'Portfolio');
+  return fancyDoc(fancyInner(parts, idn, state.result.__target||'Portfolio', lang, (state.result.skills||{})[lang], state.result.__portOrder), 'Portfolio');
 }
 
 /* ---------- SOURCE tab ---------- */
@@ -556,85 +708,312 @@ $('#saveBtn').onclick=async()=>{
   if(r.ok){state.cat=await getJSON('/api/catalog');} // refresh (titles etc)
 };
 
-/* ---------- ASSEMBLE tab (project-first, resume/portfolio 분리) ---------- */
-function move(arr,i,d){const j=i+d;if(j<0||j>=arr.length)return;[arr[i],arr[j]]=[arr[j],arr[i]];}
+/* ---------- ASSEMBLE tab — 좌: 선택(체크) / 우: 드래그 순서 미리보기 ---------- */
 function pj(pid){return state.cat.projects.find(x=>x.id===pid);}
 
-function projectRow(mode,pid,idx){
+/* 공통 드래그 정렬: 컨테이너의 '직접 자식' .dragcard 만 재배치 → onDrop(newTokenOrder) */
+function enableDrag(container,onDrop,onStart){
+  let dragEl=null;
+  container.querySelectorAll(':scope > .dragcard').forEach(el=>{
+    el.addEventListener('dragstart',e=>{dragEl=el;el.classList.add('dragging');e.dataTransfer.effectAllowed='move';try{e.dataTransfer.setData('text/plain',el.dataset.tok||'');}catch(_){} if(onStart)onStart();});
+    el.addEventListener('dragend',()=>{el.classList.remove('dragging');container.classList.remove('dragover');
+      const order=[...container.querySelectorAll(':scope > .dragcard')].map(x=>x.dataset.tok);dragEl=null;onDrop(order);});
+  });
+  container.ondragover=e=>{ if(!dragEl)return; e.preventDefault(); container.classList.add('dragover');
+    const els=[...container.querySelectorAll(':scope > .dragcard:not(.dragging)')];
+    let after=null,min=Infinity;
+    for(const c of els){const b=c.getBoundingClientRect();const off=e.clientY-(b.top+b.height/2);if(off<0&&-off<min){min=-off;after=c;}}
+    if(after)container.insertBefore(dragEl,after); else container.appendChild(dragEl);
+  };
+  container.ondragleave=e=>{if(e.target===container)container.classList.remove('dragover');};
+}
+function dragCard(tok,title,opts){
+  opts=opts||{};
+  const el=document.createElement('div');
+  el.className='dragcard'+(opts.cls?(' '+opts.cls):'')+(opts.hidden?' isoff':'');
+  el.draggable=true; el.dataset.tok=tok;
+  el.innerHTML=`<span class="gh" title="드래그로 이동">⠿</span>`
+    +(opts.expandable?`<button class="mini bexp" draggable="false" title="세부 편집">${opts.open?'▾':'▸'}</button>`:'')
+    +`<div class="dc-body"><div class="dc-title">${esc(title)}</div>${opts.sub?`<div class="dc-sub">${esc(opts.sub)}</div>`:''}</div>`
+    +(opts.kind?`<span class="dc-kind ${opts.kindCls||''}">${esc(opts.kind)}</span>`:'')
+    +(opts.hideable?`<button class="mini beye${opts.hidden?' on':''}" draggable="false" title="표시/숨김">${opts.hidden?'숨김':'표시'}</button>`:'')
+    +(opts.excludable?`<button class="mini bexcl" draggable="false" title="제외(체크 해제)">✕</button>`:'');
+  return el;
+}
+/* 보이는(포함된) 순서 newVisible 을 앞에, 나머지는 뒤에 유지 */
+function rebuildOrder(full,newVisible){const s=new Set(newVisible);return [...newVisible,...full.filter(x=>!s.has(x))];}
+
+/* ----- 좌측 선택 영역 ----- */
+function selChk(label,checked,onToggle){
+  const l=document.createElement('label'); l.className='chk';
+  l.innerHTML=`<input type="checkbox" ${checked?'checked':''}> ${label}`;
+  l.querySelector('input').onchange=e=>onToggle(e.target.checked);
+  return l;
+}
+function selectProjectRow(mode,pid){
   const p=pj(pid), st=state[mode], inc=st.inc.has(pid);
   const el=document.createElement('div'); el.className='prow'+(inc?' inc':'');
   const angchips=(p.variant_angles.length?p.variant_angles:['—']).map(a=>
     a==='—'?'<span class="muted" style="font-size:12px">변형 없음</span>'
     :`<span class="angchip ${(st.angles[pid]||[]).includes(a)?'on':''}" data-ang="${a}">${a}</span>`).join('');
   el.innerHTML=`<div class="ptop">
-      <div class="ord"><button data-up>▲</button><button data-dn>▼</button></div>
       <input type="checkbox" data-inc ${inc?'checked':''}>
       <div class="ptitle"><b>${pid}</b> ${esc(p.title_ko)} <span class="muted" style="font-size:12px">${p.tags.join(' · ')}</span></div>
     </div>
     <div class="angs">${angchips}</div>`;
-  el.querySelector('[data-up]').onclick=()=>{move(state.projOrder,idx,-1);renderProjects(mode);};
-  el.querySelector('[data-dn]').onclick=()=>{move(state.projOrder,idx,1);renderProjects(mode);};
   el.querySelector('[data-inc]').onchange=e=>{
     if(e.target.checked){st.inc.add(pid);
       if(!(st.angles[pid]&&st.angles[pid].length))
         st.angles[pid]=(mode==='resume')?p.variant_angles.slice(0,1):p.variant_angles.slice();
     }else st.inc.delete(pid);
-    renderProjects(mode);
+    renderMode(mode);
   };
   el.querySelectorAll('.angchip').forEach(c=>c.onclick=()=>{
     const a=c.getAttribute('data-ang'), cur=st.angles[pid]||[];
     const i=cur.indexOf(a); if(i>=0)cur.splice(i,1); else cur.push(a);
     st.angles[pid]=cur; if(cur.length)st.inc.add(pid);
-    renderProjects(mode);
+    renderMode(mode);
   });
   return el;
 }
-function renderProjects(mode){
-  const box=$(mode==='resume'?'#resProjects':'#portProjects'); if(!box)return; box.innerHTML='';
-  state.projOrder.forEach((pid,idx)=>box.appendChild(projectRow(mode,pid,idx)));
-}
-function renderSections(mode){
-  const chk=(sid,lab,set)=>{const l=document.createElement('label');l.className='chk';
-    l.innerHTML=`<input type="checkbox" ${set.has(sid)?'checked':''}> ${lab}`;
-    l.querySelector('input').onchange=e=>{e.target.checked?set.add(sid):set.delete(sid);};return l;};
+function renderSelect(mode){
   if(mode==='resume'){
-    const pl=$('#resSections');pl.innerHTML='';
-    [['00_identity','정체성'],['01_skills','스킬'],['02_education','학력']].forEach(([s,l])=>pl.appendChild(chk(s,l,state.resume.plain)));
-    const ex=$('#resExp');ex.innerHTML='';
-    state.cat.experiences.forEach(e=>{const l=document.createElement('label');l.className='chk';
-      l.innerHTML=`<input type="checkbox" ${state.resume.exp.has(e.sid)?'checked':''}> ${esc(e.company_ko)} <span class="muted">(${e.sid.split('/')[1]})</span>`;
-      l.querySelector('input').onchange=ev=>{ev.target.checked?state.resume.exp.add(e.sid):state.resume.exp.delete(e.sid);};ex.appendChild(l);});
+    const R=state.resume;
+    const sec=$('#resSecSel'); sec.innerHTML='';
+    [['00_identity','프로필'],['01_skills','스킬'],['02_education','학력']].forEach(([s,l])=>
+      sec.appendChild(selChk(l,R.plain.has(s),v=>{v?R.plain.add(s):R.plain.delete(s);renderPreviewPane('resume');})));
+    const ex=$('#resExpSel'); ex.innerHTML='';
+    state.cat.experiences.forEach(e=>ex.appendChild(selChk(
+      `${esc(e.company_ko)} <span class="muted">(${e.sid.split('/')[1]})</span>`,
+      R.exp.has(e.sid), v=>{v?R.exp.add(e.sid):R.exp.delete(e.sid);renderPreviewPane('resume');})));
+    const pr=$('#resProjSel'); pr.innerHTML='';
+    state.projOrder.forEach(pid=>pr.appendChild(selectProjectRow('resume',pid)));
   }else{
-    const pl=$('#portSections');pl.innerHTML='';
-    [['00_identity','정체성'],['90_appendix','부록']].forEach(([s,l])=>pl.appendChild(chk(s,l,state.portfolio.plain)));
+    const P=state.portfolio;
+    const sec=$('#portSecSel'); sec.innerHTML='';
+    sec.appendChild(selChk('소개',P.plain.has('00_identity'),v=>{v?P.plain.add('00_identity'):P.plain.delete('00_identity');renderPreviewPane('portfolio');}));
+    sec.appendChild(selChk('기술 스택',P.skillsOn!==false,v=>{P.skillsOn=v;renderPreviewPane('portfolio');}));
+    sec.appendChild(selChk('부록',P.plain.has('90_appendix'),v=>{v?P.plain.add('90_appendix'):P.plain.delete('90_appendix');renderPreviewPane('portfolio');}));
+    const pr=$('#portProjSel'); pr.innerHTML='';
+    state.projOrder.forEach(pid=>pr.appendChild(selectProjectRow('portfolio',pid)));
   }
 }
-function renderAssemble(){renderSections('resume');renderSections('portfolio');renderProjects('resume');renderProjects('portfolio');}
+
+/* ----- 블록 라벨/포함 판정 ----- */
+function blockInfo(mode,tok){
+  if(mode==='resume'){
+    const R={'00_identity':'프로필','01_skills':'스킬','02_education':'학력'};
+    if(R[tok])return{title:R[tok],kind:'섹션'};
+    const e=state.cat.experiences.find(x=>x.sid===tok);
+    return{title:(e?e.company_ko:tok),kind:'경력',kindCls:'exp',sub:(e?[e.title_ko,tok.split('/')[1]].filter(Boolean).join(' · '):tok.split('/')[1])};
+  }
+  const cnt=state.projOrder.filter(p=>state.portfolio.inc.has(p)).length;
+  const M={about:{title:'소개',kind:'섹션'},skills:{title:'기술 스택',kind:'섹션'},
+           projects:{title:'프로젝트',kind:'섹션',sub:cnt+'개 카드'},appendix:{title:'부록',kind:'섹션'}};
+  return M[tok]||{title:tok,kind:'섹션'};
+}
+function blockOn(mode,tok){
+  if(mode==='resume'){
+    if(tok.indexOf('10_experience/')===0)return state.resume.exp.has(tok);
+    return state.resume.plain.has(tok);
+  }
+  const P=state.portfolio;
+  if(tok==='about')return P.plain.has('00_identity');
+  if(tok==='skills')return P.skillsOn!==false;
+  if(tok==='projects')return state.projOrder.some(p=>P.inc.has(p));
+  if(tok==='appendix')return P.plain.has('90_appendix');
+  return false;
+}
+
+/* ----- 우측 순서 미리보기 (드래그) ----- */
+function fillDrag(box,cards,onDrop){
+  box.innerHTML=''; cards.forEach(c=>box.appendChild(c));
+  box.classList.toggle('empty',cards.length===0);
+  if(cards.length)enableDrag(box,onDrop);
+}
+function excludeBlock(mode,t){
+  if(mode==='resume'){const R=state.resume;
+    if(t.indexOf('10_experience/')===0)R.exp.delete(t); else R.plain.delete(t);
+  }else{const P=state.portfolio;
+    if(t==='about')P.plain.delete('00_identity');
+    else if(t==='appendix')P.plain.delete('90_appendix');
+    else if(t==='skills')P.skillsOn=false;
+  }
+  renderMode(mode);
+}
+function renderPreviewPane(mode){
+  if(mode==='resume'){
+    const R=state.resume;
+    const box=$('#resBlockPv'); box.innerHTML='';
+    const toks=(R.order||[]).filter(t=>blockOn('resume',t));
+    toks.forEach(t=>{
+      const info=blockInfo('resume',t), isExp=t.indexOf('10_experience/')===0, isSkills=(t==='01_skills');
+      const expandable=isExp||isSkills, open=(R._openBlock===t);
+      const card=dragCard(t,info.title,{kind:info.kind,kindCls:info.kindCls,sub:info.sub,expandable,open,excludable:true});
+      box.appendChild(card);
+      if(expandable)card.querySelector('.bexp').onclick=e=>{e.stopPropagation();R._openBlock=open?null:t;renderPreviewPane('resume');};
+      card.querySelector('.bexcl').onclick=e=>{e.stopPropagation();excludeBlock('resume',t);};
+      if(expandable&&open){const panel=document.createElement('div');panel.className='bulletpanel';box.appendChild(panel);
+        isExp?loadBullets(t,panel):loadSkills(panel,'resume');}
+    });
+    box.classList.toggle('empty',toks.length===0);
+    if(toks.length)enableDrag(box,
+      newToks=>{state.resume.order=rebuildOrder(state.resume.order,newToks);renderPreviewPane('resume');});
+    return;
+  }
+  {
+    const P=state.portfolio;
+    const bbox=$('#portBlockPv'); bbox.innerHTML='';
+    const toks=(P.order||[]).filter(t=>blockOn('portfolio',t));
+    toks.forEach(t=>{
+      const i=blockInfo('portfolio',t), isSkills=(t==='skills'), open=(P._openBlock===t);
+      const excludable=(t!=='projects');   // 프로젝트 블록은 아래 카드 체크로 제어
+      const card=dragCard(t,i.title,{kind:i.kind,sub:i.sub,expandable:isSkills,open,excludable});
+      bbox.appendChild(card);
+      if(isSkills)card.querySelector('.bexp').onclick=e=>{e.stopPropagation();P._openBlock=open?null:t;renderPreviewPane('portfolio');};
+      const xb=card.querySelector('.bexcl'); if(xb)xb.onclick=e=>{e.stopPropagation();excludeBlock('portfolio',t);};
+      if(isSkills&&open){const panel=document.createElement('div');panel.className='bulletpanel';bbox.appendChild(panel);loadSkills(panel,'portfolio');}
+    });
+    bbox.classList.toggle('empty',toks.length===0);
+    if(toks.length)enableDrag(bbox,newToks=>{state.portfolio.order=rebuildOrder(state.portfolio.order,newToks);renderPreviewPane('portfolio');});
+    const box=$('#portProjPv'); box.innerHTML='';
+    const pids=state.projOrder.filter(p=>P.inc.has(p));
+    pids.forEach(pid=>{
+      const p=pj(pid), ang=(P.angles[pid]||[]).join(' · '), open=(P._openProj===pid);
+      const card=dragCard(pid,`${pid} · ${p.title_ko}`,{kind:'프로젝트',sub:ang||'관점 없음',expandable:true,open,excludable:true});
+      box.appendChild(card);
+      card.querySelector('.bexp').onclick=e=>{e.stopPropagation();P._openProj=open?null:pid;renderPreviewPane('portfolio');};
+      card.querySelector('.bexcl').onclick=e=>{e.stopPropagation();P.inc.delete(pid);renderMode('portfolio');};
+      if(open){const panel=document.createElement('div');panel.className='bulletpanel';box.appendChild(panel);loadPortBullets(pid,panel);}
+    });
+    box.classList.toggle('empty',pids.length===0);
+    if(pids.length)enableDrag(box,newPids=>{state.projOrder=rebuildOrder(state.projOrder,newPids);renderPreviewPane('portfolio');});
+  }
+}
+/* 공통 세부 항목 에디터: 드래그 정렬 + 표시/숨김. items=[{key,title,sub,kind,kindCls,hidden}] */
+function renderEditor(container,items,onChange){
+  container.innerHTML='';
+  container.classList.toggle('empty',items.length===0);
+  items.forEach(it=>{
+    const card=dragCard(it.key,it.title,{kind:it.kind,kindCls:it.kindCls,sub:it.sub,cls:'bcard',hideable:true,hidden:it.hidden});
+    container.appendChild(card);
+    card.querySelector('.beye').onclick=e=>{e.stopPropagation();it.hidden=!it.hidden;sync();renderEditor(container,items,onChange);};
+  });
+  function sync(){
+    const dom=[...container.querySelectorAll(':scope > .dragcard')].map(c=>c.dataset.tok);
+    const by={}; items.forEach(x=>by[x.key]=x);
+    const seq=dom.map(k=>by[k]).filter(Boolean);
+    if(seq.length===items.length){items.length=0;items.push(...seq);}
+    onChange(items);
+  }
+  enableDrag(container,()=>{sync();renderEditor(container,items,onChange);});
+}
+function editorHead(text){const h=document.createElement('div');h.className='bp-head';h.textContent=text;return h;}
+function editorList(){const l=document.createElement('div');l.className='draglist bullets';return l;}
+
+/* 경력 카드 펼침 → 실제 조립된 불렛을 가져와 드래그 정렬 + 숨김 */
+async function loadBullets(sid,panel){
+  panel.innerHTML='<div class="bp-load">불렛 불러오는 중…</div>';
+  let r; try{ r=await postJSON('/api/assemble',currentProfile()); }catch(_){ panel.innerHTML='<div class="bp-load">불러오기 실패</div>'; return; }
+  if(state.resume._openBlock!==sid)return;
+  const lang=(r.langs&&r.langs[0])||'ko';
+  const exps=((r.resume_struct||{})[lang]||{}).experiences||[];
+  if(exps.length&&exps.every(e=>e.bullet_items===undefined)){
+    panel.innerHTML='<div class="bp-load">⚠ 서버(build.py)가 최신이 아닙니다. 터미널에서 서버를 <b>재시작</b>한 뒤 다시 열어주세요.</div>';return;
+  }
+  const exp=exps.find(e=>e.sid===sid);
+  if(!exp){panel.innerHTML='<div class="bp-load">이 경력이 이력서에 포함돼 있지 않습니다 — 왼쪽에서 체크하세요.</div>';return;}
+  const bi=exp.bullet_items||[];
+  if(!bi.length){panel.innerHTML='<div class="bp-load">정렬할 불렛이 없습니다 — 왼쪽에서 프로젝트를 포함하거나 소스에 불렛을 추가하세요.</div>';return;}
+  panel.innerHTML=''; panel.appendChild(editorHead('불렛 — 드래그 정렬 · 표시/숨김'));
+  const list=editorList(); panel.appendChild(list);
+  const norm=bi.map(it=>({key:it.key,title:it.text,kind:it.key.indexOf('x:')===0?'직접':'프로젝트',kindCls:it.key.indexOf('x:')===0?'':'exp',hidden:!!it.hidden}));
+  renderEditor(list,norm,arr=>{
+    state.resume.bulletOrder[sid]=arr.map(x=>x.key);
+    state.resume.bulletHidden[sid]=arr.filter(x=>x.hidden).map(x=>x.key);
+  });
+}
+/* 포폴 프로젝트 카드 펼침 → 나의 역할(그룹) + 주요 성과(개별) 정렬·숨김 */
+async function loadPortBullets(pid,panel){
+  panel.innerHTML='<div class="bp-load">불렛 불러오는 중…</div>';
+  let r; try{ r=await postJSON('/api/assemble',currentProfile()); }catch(_){ panel.innerHTML='<div class="bp-load">불러오기 실패</div>'; return; }
+  if(state.portfolio._openProj!==pid)return;
+  const lang=(r.langs&&r.langs[0])||'ko';
+  const part=(((r.portfolio_parts||{})[lang])||[]).find(x=>x.kind==='project'&&x.id===pid);
+  if(!part){panel.innerHTML='<div class="bp-load">이 프로젝트가 포폴에 포함돼 있지 않습니다 — 왼쪽에서 체크하세요.</div>';return;}
+  const groups=part.role_groups||[], impact=part.impact||[];
+  if((groups.length&&groups.every(g=>g.key===undefined))||(impact.length&&impact.every(i=>i.key===undefined))){
+    panel.innerHTML='<div class="bp-load">⚠ 서버(build.py)가 최신이 아닙니다. 터미널에서 서버를 <b>재시작</b>한 뒤 다시 열어주세요.</div>';return;
+  }
+  if(!groups.length&&!impact.length){panel.innerHTML='<div class="bp-load">이 카드에는 정렬할 불렛이 없습니다.</div>';return;}
+  panel.innerHTML='';
+  const gnorm=groups.map(g=>({key:g.key,title:g.label||'(그룹)',kind:'그룹',kindCls:'exp',sub:((g.items||[]).length)+'개 항목',hidden:!!g.hidden}));
+  const inorm=impact.map(f=>({key:f.key,title:f.value,kind:f.kind==='metric'?'지표':'도입',hidden:!!f.hidden}));
+  const commit=()=>{
+    state.portfolio.bulletOrder[pid]=[...gnorm.map(x=>x.key),...inorm.map(x=>x.key)];
+    state.portfolio.bulletHidden[pid]=[...gnorm.filter(x=>x.hidden).map(x=>x.key),...inorm.filter(x=>x.hidden).map(x=>x.key)];
+  };
+  if(gnorm.length){panel.appendChild(editorHead('나의 역할 — 그룹 정렬 · 표시/숨김'));const gl=editorList();panel.appendChild(gl);renderEditor(gl,gnorm,commit);}
+  if(inorm.length){panel.appendChild(editorHead('주요 성과 — 정렬 · 표시/숨김'));const il=editorList();panel.appendChild(il);renderEditor(il,inorm,commit);}
+}
+/* 기술 스택 펼침 → 스킬 그룹 정렬·숨김 (이력서·포폴 공용) */
+async function loadSkills(panel,mode){
+  panel.innerHTML='<div class="bp-load">스킬 불러오는 중…</div>';
+  let r; try{ r=await postJSON('/api/assemble',currentProfile()); }catch(_){ panel.innerHTML='<div class="bp-load">불러오기 실패</div>'; return; }
+  const openTok=(mode==='resume')?'01_skills':'skills';
+  if(state[mode]._openBlock!==openTok)return;
+  const lang=(r.langs&&r.langs[0])||'ko';
+  const sk=((r.skills||{})[lang])||[];
+  if(sk.length&&sk.every(s=>s.key===undefined)){
+    panel.innerHTML='<div class="bp-load">⚠ 서버(build.py)가 최신이 아닙니다. 터미널에서 서버를 <b>재시작</b>한 뒤 다시 열어주세요.</div>';return;
+  }
+  if(!sk.length){panel.innerHTML='<div class="bp-load">스킬 항목이 없습니다.</div>';return;}
+  panel.innerHTML=''; panel.appendChild(editorHead('기술 스택 — 그룹 정렬 · 표시/숨김'));
+  const list=editorList(); panel.appendChild(list);
+  const norm=sk.map(s=>({key:s.key,title:s.label||s.rest,sub:s.label?s.rest:'',kind:'스킬',hidden:!!s.hidden}));
+  renderEditor(list,norm,arr=>{
+    state.skillsOrder=arr.map(x=>x.key);
+    state.skillsHidden=arr.filter(x=>x.hidden).map(x=>x.key);
+  });
+}
+function renderMode(mode){renderSelect(mode);renderPreviewPane(mode);}
+function renderAssemble(){renderMode('resume');renderMode('portfolio');}
 $$('.subtabs button').forEach(b=>b.onclick=()=>{state.sub=b.dataset.sub;
   $$('.subtabs button').forEach(x=>x.classList.toggle('on',x===b));
-  $('#sub-resume').style.display=state.sub==='resume'?'':'none';
-  $('#sub-portfolio').style.display=state.sub==='portfolio'?'':'none';});
+  const r=state.sub==='resume';
+  $('#sub-resume-sel').style.display=r?'':'none'; $('#sub-portfolio-sel').style.display=r?'none':'';
+  $('#sub-resume-pv').style.display=r?'':'none'; $('#sub-portfolio-pv').style.display=r?'none':'';});
 
 function currentProfile(){
   const R=state.resume,P=state.portfolio;
-  const rinc=[]; if(R.plain.has('00_identity'))rinc.push('00_identity'); if(R.plain.has('01_skills'))rinc.push('01_skills');
-  state.cat.experiences.forEach(e=>{if(R.exp.has(e.sid))rinc.push(e.sid);});
-  if(R.plain.has('02_education'))rinc.push('02_education');
+  // 이력서 include = 사용자가 정한 순서대로, 포함된 것만
+  const rinc=[];
+  (R.order||[]).forEach(tok=>{
+    if(tok.indexOf('10_experience/')===0){if(R.exp.has(tok))rinc.push(tok);}
+    else if(R.plain.has(tok))rinc.push(tok);
+  });
   const rProj=state.projOrder.filter(p=>R.inc.has(p));
   const rAng={}; rProj.forEach(p=>{if((R.angles[p]||[]).length)rAng[p]=R.angles[p];});
   const pinc=[]; if(P.plain.has('00_identity'))pinc.push('00_identity');
   state.projOrder.forEach(p=>{if(P.inc.has(p))pinc.push(pj(p).sid);});
   if(P.plain.has('90_appendix'))pinc.push('90_appendix');
   const pAng={}; state.projOrder.forEach(p=>{if(P.inc.has(p)&&(P.angles[p]||[]).length)pAng[p]=P.angles[p];});
+  // 포폴 섹션 순서 = 사용자가 정한 순서, 포함된 블록만
+  const hasProj=state.projOrder.some(p=>P.inc.has(p));
+  const secOn={about:P.plain.has('00_identity'),skills:P.skillsOn!==false,projects:hasProj,appendix:P.plain.has('90_appendix')};
+  const section_order=(P.order||['about','skills','projects','appendix']).filter(t=>secOn[t]);
   return {name:$('#pName').value.trim(),target:$('#pTarget').value,lang:$('#pLang').value,
     emphasis:state.cat.angles.map(a=>a.id),
-    resume:{include:rinc,project_order:rProj,project_angles:rAng,max_bullets_per_job:+$('#pMax').value},
-    portfolio:{include:pinc,project_angles:pAng,detail_level:$('#pDetail').value}};
+    skills_order:state.skillsOrder||[], skills_hidden:state.skillsHidden||[],
+    resume:{include:rinc,project_order:rProj,project_angles:rAng,max_bullets_per_job:+$('#pMax').value,
+      bullet_order:state.resume.bulletOrder||{},bullet_hidden:state.resume.bulletHidden||{}},
+    portfolio:{include:pinc,project_angles:pAng,detail_level:$('#pDetail').value,section_order:section_order,
+      bullet_order:state.portfolio.bulletOrder||{},bullet_hidden:state.portfolio.bulletHidden||{}}};
 }
 $('#buildBtn').onclick=async()=>{
   const prof=currentProfile();$('#asmMsg').textContent='조립 중…';
   const r=await postJSON('/api/assemble',prof);
-  state.result=r; state.result.__target=prof.target;
+  state.result=r; state.result.__target=prof.target; state.result.__portOrder=(prof.portfolio||{}).section_order;
   $('#asmMsg').textContent='완료 ✓';
   $('#asmWarn').innerHTML=(r.errors&&r.errors.length?`<div class="errs">검증 에러 ${r.errors.length}건: ${r.errors.slice(0,3).map(esc).join(' / ')}</div>`:'')
     +(r.warnings&&r.warnings.length?r.warnings.map(esc).join('<br>'):'경고 없음');
@@ -664,10 +1043,23 @@ function applyProfile(name,p){
   R.exp=new Set(rinc.filter(s=>s.startsWith('10_experience/')));
   R.inc=new Set((p.resume||{}).project_order||[]);
   R.angles=Object.assign({},(p.resume||{}).project_angles||{});
+  R.bulletOrder=Object.assign({},(p.resume||{}).bullet_order||{});
+  R.bulletHidden=Object.assign({},(p.resume||{}).bullet_hidden||{}); R._openBlock=null;
+  // 이력서 블록 순서 복원: include 순서 유지 + 누락된 기본 토큰은 뒤에 붙임
+  const knownRes=rinc.filter(s=>/^(00_identity|01_skills|02_education)$/.test(s)||s.startsWith('10_experience/'));
+  const allRes=['00_identity','01_skills','02_education',...state.cat.experiences.map(e=>e.sid)];
+  R.order=[...knownRes,...allRes.filter(t=>!knownRes.includes(t))];
   P.plain=new Set(((p.portfolio||{}).include||[]).filter(s=>!s.startsWith('20_projects/')));
   const portIds=((p.portfolio||{}).include||[]).filter(s=>s.startsWith('20_projects/')).map(s=>s.split('/')[1]);
   P.inc=new Set(portIds);
   P.angles=Object.assign({},(p.portfolio||{}).project_angles||{});
+  P.bulletOrder=Object.assign({},(p.portfolio||{}).bullet_order||{});
+  P.bulletHidden=Object.assign({},(p.portfolio||{}).bullet_hidden||{}); P._openProj=null; P._openBlock=null;
+  // 포폴 섹션 순서 복원: section_order 유지 + 누락된 기본 블록은 뒤에 붙임
+  const secOrd=((p.portfolio||{}).section_order)||[], allPort=['about','skills','projects','appendix'];
+  P.order=[...secOrd.filter(t=>allPort.includes(t)),...allPort.filter(t=>!secOrd.includes(t))];
+  P.skillsOn=(secOrd.length? secOrd.includes('skills') : true);
+  state.skillsOrder=(p.skills_order||[]).slice(); state.skillsHidden=(p.skills_hidden||[]).slice();
   const ro=(p.resume||{}).project_order||[], all=state.cat.projects.map(x=>x.id);
   state.projOrder=[...ro,...portIds.filter(x=>!ro.includes(x)),...all.filter(x=>!ro.includes(x)&&!portIds.includes(x))];
   renderAssemble();
@@ -686,7 +1078,7 @@ function previewHTML(){
   // 포트폴리오 = 디자인 버전
   const idn=(state.result.identity||{})[lang];
   const parts=(state.result.portfolio_parts||{})[lang]||[];
-  return `<style>${PFCSS}</style><div class="pf">${fancyInner(parts, idn, state.result.__target||'Portfolio', lang, (state.result.skills||{})[lang])}</div>`;
+  return `<style>${PFCSS}</style><div class="pf">${fancyInner(parts, idn, state.result.__target||'Portfolio', lang, (state.result.skills||{})[lang], state.result.__portOrder)}</div>`;
 }
 function renderPreview(){$('#preview').innerHTML=previewHTML();if($('#pvKind').value==='portfolio')pfInit($('#preview'));}
 $('#pvKind').onchange=renderPreview;$('#pvLang').onchange=renderPreview;
@@ -737,8 +1129,11 @@ async function init(){
   state.cat=await getJSON('/api/catalog');
   setStatus(`프로젝트 ${state.cat.projects.length} · 프로필 ${state.cat.profiles.length}`);
   buildFileList();
-  state.resume={plain:new Set(['00_identity','01_skills','02_education']),exp:new Set(state.cat.experiences.map(e=>e.sid)),inc:new Set(),angles:{}};
-  state.portfolio={plain:new Set(['00_identity','90_appendix']),inc:new Set(),angles:{}};
+  state.resume={plain:new Set(['00_identity','01_skills','02_education']),exp:new Set(state.cat.experiences.map(e=>e.sid)),inc:new Set(),angles:{},
+    order:['00_identity','01_skills',...state.cat.experiences.map(e=>e.sid),'02_education'],bulletOrder:{},bulletHidden:{},_openBlock:null};
+  state.portfolio={plain:new Set(['00_identity','90_appendix']),inc:new Set(),angles:{},skillsOn:true,
+    order:['about','skills','projects','appendix'],bulletOrder:{},bulletHidden:{},_openProj:null,_openBlock:null};
+  state.skillsOrder=[]; state.skillsHidden=[];
   state.projOrder=state.cat.projects.map(p=>p.id);
   state.sub='resume';
   fillProfiles();renderAssemble();

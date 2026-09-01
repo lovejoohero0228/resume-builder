@@ -126,6 +126,18 @@ def _clean_group_label(label: str) -> str:
     return re.sub(r"\s*\(\s*구\s*p\d+\s*\)", "", label).strip()
 
 
+def _apply_bullet_order(items: list, order: list) -> list:
+    """items(각 dict에 'key') 를 order(키 리스트) 순으로 재배치. 모르는 key 는 원래 순서로 뒤에."""
+    if not order:
+        return items
+    bykey, oset = {}, set(order)
+    for it in items:
+        bykey.setdefault(it.get("key"), it)
+    seq = [bykey[k] for k in order if k in bykey]
+    seq += [it for it in items if it.get("key") not in oset]
+    return seq
+
+
 def build_problem(meta: dict, lg: str) -> dict | None:
     """문제 정의 = 풀고자 한 문제(goal) + 제약·난점(hurdle) 2분할. 없으면 None."""
     pr = meta.get("problem") or {}
@@ -362,13 +374,28 @@ def portfolio_parts(profile: dict, projects: dict, lg: str, report: list) -> lis
                          "confidence": f.get("confidence")}
                         for f in mfacts.values()
                         if f.get("disclosure") != "internal" and (f.get(f"value_{lg}") or "").strip()]
+            role_groups = build_role_groups(m, proj["path"], mfacts, lg) if proj else []
+            for _n, _g in enumerate(role_groups):
+                _g["key"] = f"grp:{_n}"
+            impact = build_impact(mfacts, lg)
+            for _n, _it in enumerate(impact):
+                _it["key"] = f"imp:{_n}"
+            _bord = (pconf.get("bullet_order") or {}).get(pid) or []
+            if _bord:
+                role_groups = _apply_bullet_order(role_groups, [k for k in _bord if k.startswith("grp:")])
+                impact = _apply_bullet_order(impact, [k for k in _bord if k.startswith("imp:")])
+            _bhid = set(((pconf.get("bullet_hidden") or {}).get(pid)) or [])
+            for _g in role_groups:
+                _g["hidden"] = _g["key"] in _bhid
+            for _it in impact:
+                _it["hidden"] = _it["key"] in _bhid
             parts.append({"sid": sid, "kind": "project", "title": title, "md": md,
                           "id": pid, "org": m.get("org", ""), "period": m.get("period", ""),
                           "role": role_disp, "tags": m.get("tags", []) or [],
                           "angles": (pconf.get("project_angles") or {}).get(pid) or (m.get("angles", []) or []),
                           "points": points, "facts": pubfacts, "body_md": body_md,
-                          "role_groups": build_role_groups(m, proj["path"], mfacts, lg) if proj else [],
-                          "impact": build_impact(mfacts, lg),
+                          "role_groups": role_groups,
+                          "impact": impact,
                           "problem": build_problem(m, lg),
                           "card": ((m.get("card") or {}).get(lg) or "").strip(),
                           "short": clean(strip_lang((m.get("short") or {}).get(lg, ""), lg))})
@@ -410,7 +437,7 @@ def _identity_struct(lg: str) -> dict:
             "contact": (rest[1].strip() if len(rest) > 1 else ""), "summary": summary.strip()}
 
 
-def _skills_struct(lg: str) -> list:
+def _skills_struct(lg: str, order=None, hidden=None) -> list:
     rows = []
     for l in _src_text("01_skills", lg).split("\n"):
         m = re.match(r"^-\s+(.*)$", l.strip())
@@ -421,6 +448,13 @@ def _skills_struct(lg: str) -> list:
             rows.append({"label": mm.group(1).strip(), "rest": mm.group(2).strip()})
         else:
             rows.append({"label": "", "rest": m.group(1).strip()})
+    for n, r in enumerate(rows):
+        r["key"] = f"sk:{n}"
+    if order:
+        rows = _apply_bullet_order(rows, order)
+    hset = set(hidden or [])
+    for r in rows:
+        r["hidden"] = r["key"] in hset
     return rows
 
 
@@ -439,7 +473,7 @@ def _education_struct(lg: str) -> list:
 
 
 def _experience_struct(path, lg, projects, emphasis, porder, max_bullets, report,
-                       project_angles=None) -> dict:
+                       project_angles=None, sid="", bullet_order=None, bullet_hidden=None) -> dict:
     meta, body = V.parse_frontmatter(path)
     body = strip_lang(body, lg)
     period = meta.get(f"period_{lg}", meta.get("period", ""))
@@ -454,7 +488,8 @@ def _experience_struct(path, lg, projects, emphasis, porder, max_bullets, report
     kept = set(porder) if porder else set(ph_ids)
     budget = [max_bullets if max_bullets else 10 ** 6]
 
-    bullets, lines, i = [], hl.split("\n"), 0
+    # 각 불렛에 안정적 key 부여: 프로젝트 = "p:<pid>:<angle>", 직접 작성 = "x:<n>"
+    items, plain_n, lines, i = [], 0, hl.split("\n"), 0
     while i < len(lines):
         s = lines[i].strip()
         m = re.match(r"^\{\{\s*(p\d+)\s*\}\}$", s)
@@ -463,11 +498,11 @@ def _experience_struct(path, lg, projects, emphasis, porder, max_bullets, report
             proj = projects.get(pid)
             if pid in kept and proj:
                 angs = project_angles.get(pid)
-                vs = ([pick_variant_angle(proj["meta"], a) for a in angs] if angs
-                      else [pick_variant(proj["meta"], emphasis, report)])
-                for v in vs:
+                pairs = ([(a, pick_variant_angle(proj["meta"], a)) for a in angs] if angs
+                         else [("", pick_variant(proj["meta"], emphasis, report))])
+                for ang, v in pairs:
                     if v and budget[0] > 0:
-                        bullets.append((v.get(lg, "") or "").strip())
+                        items.append({"key": f"p:{pid}:{ang}", "text": (v.get(lg, "") or "").strip()})
                         budget[0] -= 1
             i += 1
             continue
@@ -478,14 +513,35 @@ def _experience_struct(path, lg, projects, emphasis, porder, max_bullets, report
                     and not lines[i].strip().startswith("{{"):
                 buf += " " + lines[i].strip()
                 i += 1
-            bullets.append(re.sub(r"\s+", " ", buf).strip())
+            items.append({"key": f"x:{plain_n}", "text": re.sub(r"\s+", " ", buf).strip()})
+            plain_n += 1
             continue
         i += 1
+
+    items = [it for it in items if it["text"]]
+
+    # 프로필에 저장된 불렛 순서 적용 (알 수 없는 key 는 원래(소스) 순서로 뒤에)
+    order = (bullet_order or {}).get(sid) or []
+    if order:
+        oset, seq = set(order), []
+        for k in order:
+            for it in items:
+                if it["key"] == k and it not in seq:
+                    seq.append(it)
+        seq += [it for it in items if it["key"] not in oset]
+        items = seq
+
+    # 숨김(제외) 처리: bullet_items 는 전부 유지(hidden 표시), 실제 렌더용 bullets 는 제외
+    hset = set((bullet_hidden or {}).get(sid) or [])
+    for it in items:
+        it["hidden"] = it["key"] in hset
 
     return {"company": meta.get(f"company_{lg}", meta.get("company_ko", "")),
             "title": meta.get(f"title_{lg}", meta.get("title_ko", "")),
             "period": period, "location": meta.get(f"location_{lg}", meta.get("location_ko", "")),
-            "context": ctx, "bullets": [b for b in bullets if b]}
+            "context": ctx, "sid": sid,
+            "bullets": [it["text"] for it in items if not it["hidden"]],
+            "bullet_items": items}
 
 
 def resume_struct(profile: dict, projects: dict, lg: str) -> dict:
@@ -494,21 +550,27 @@ def resume_struct(profile: dict, projects: dict, lg: str) -> dict:
     porder = rconf.get("project_order", []) or []
     maxb = rconf.get("max_bullets_per_job", 0)
     out = {"target": profile.get("target", ""), "lang": lg,
-           "identity": None, "skills": [], "experiences": [], "education": []}
+           "identity": None, "skills": [], "experiences": [], "education": [],
+           "order": []}
     scratch = []
     for sid in rconf.get("include", []) or []:
         if sid == "00_identity":
             out["identity"] = _identity_struct(lg)
+            out["order"].append("identity")
         elif sid == "01_skills":
-            out["skills"] = _skills_struct(lg)
+            out["skills"] = _skills_struct(lg, profile.get("skills_order"), profile.get("skills_hidden"))
+            out["order"].append("skills")
         elif sid == "02_education":
             out["education"] = _education_struct(lg)
+            out["order"].append("education")
         elif sid.startswith("10_experience/"):
             p = resolve_source_path(sid)
             if p:
                 out["experiences"].append(
                     _experience_struct(p, lg, projects, emphasis, porder, maxb, scratch,
-                                       rconf.get("project_angles", {})))
+                                       rconf.get("project_angles", {}), sid,
+                                       rconf.get("bullet_order", {}), rconf.get("bullet_hidden", {})))
+                out["order"].append("experience")
     return out
 
 
@@ -523,7 +585,7 @@ def assemble(profile: dict) -> dict:
            "identity": {}, "skills": {}}
     for lg in langs:
         res["identity"][lg] = _identity_struct(lg)
-        res["skills"][lg] = _skills_struct(lg)
+        res["skills"][lg] = _skills_struct(lg, profile.get("skills_order"), profile.get("skills_hidden"))
         res["resume"][lg] = render_resume(profile, projects, lg, report)
         res["resume_struct"][lg] = resume_struct(profile, projects, lg)
         res["portfolio_parts"][lg] = portfolio_parts(profile, projects, lg, report)

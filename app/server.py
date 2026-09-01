@@ -56,6 +56,27 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
+    def _serve_asset(self, path):
+        """assets/ 안의 정적 파일(이미지 등) 서빙. 경로 이탈 차단."""
+        import mimetypes
+        from urllib.parse import unquote
+        rel = unquote(path).lstrip("/")
+        if ".." in rel.replace("\\", "/").split("/"):
+            return self._send(404, {"error": "not found"})
+        fp = os.path.normpath(os.path.join(ROOT, rel))
+        assets_dir = os.path.join(ROOT, "assets")
+        if not (fp == assets_dir or fp.startswith(assets_dir + os.sep)) or not os.path.isfile(fp):
+            return self._send(404, {"error": "not found"})
+        ctype = mimetypes.guess_type(fp)[0] or "application/octet-stream"
+        with open(fp, "rb") as f:
+            data = f.read()
+        self.send_response(200)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Content-Length", str(len(data)))
+        self.send_header("Cache-Control", "no-cache")
+        self.end_headers()
+        self.wfile.write(data)
+
     def _read_json(self):
         n = int(self.headers.get("Content-Length", 0))
         return json.loads(self.rfile.read(n) or b"{}")
@@ -71,6 +92,8 @@ class Handler(BaseHTTPRequestHandler):
             if u.path in ("/", "/index.html"):
                 with open(os.path.join(HERE, "index.html"), encoding="utf-8") as f:
                     return self._send(200, f.read(), "text/html; charset=utf-8")
+            if u.path.startswith("/assets/"):
+                return self._serve_asset(u.path)
             if u.path == "/api/catalog":
                 return self._send(200, B.catalog())
             if u.path == "/api/file":
