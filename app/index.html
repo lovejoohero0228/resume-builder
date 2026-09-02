@@ -291,25 +291,24 @@ function md2html(md){
 
 /* ---------- Resume 1 형식 (docx: Arial · 좌측 · 남색 #153D63) ---------- */
 const R1CSS=`
-.r1{font-family:Arial,'Helvetica Neue',sans-serif;color:#111;font-size:9.4pt;line-height:1.42}
-.r1 .name{font-size:18pt;font-weight:700;margin:0}
-.r1 .tag{font-size:9pt;font-weight:700;color:#153D63;margin:2px 0 1px}
-.r1 .contact{font-size:8.4pt;color:#555;margin:0 0 6px}
-.r1 h2{font-size:10pt;font-weight:700;color:#153D63;letter-spacing:.05em;text-transform:uppercase;margin:12px 0 4px;border-bottom:1px solid #dbe0e8;padding-bottom:2px}
-.r1 p.prof{margin:0}
-.r1 .skill{margin:1.5px 0}
-.r1 .skill b{color:#153D63}
-.r1 .job{margin:8px 0 3px}
-.r1 .job .jobtop{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
-.r1 .job .co{font-weight:700}
-.r1 .job .jobwhen{color:#555;font-size:9pt;white-space:nowrap}
-.r1 .job .jobtitle{font-size:9.5pt;margin:1px 0 1px}
-.r1 .job .jobdom{color:#153D63}
-.r1 .job .ti{color:#555;font-size:9pt;margin:1px 0 3px}
+.r1{font-family:Calibri,'Malgun Gothic',sans-serif;color:#000;font-size:9.5pt;line-height:1.32;max-width:7.7in;margin:0 auto}
+.r1 .name{font-size:16pt;font-weight:700;color:#1F3864;text-align:center;margin:0 0 2px}
+.r1 .tag{font-size:10pt;font-weight:700;text-align:center;margin:0 0 2px}
+.r1 .contact{font-size:9pt;text-align:center;margin:0 0 4px}
+.r1 h2{font-size:10pt;font-weight:700;color:#1F3864;text-transform:uppercase;letter-spacing:.01em;margin:9px 0 3px}
+.r1 p.prof{margin:2px 0 3px}
+.r1 .skill{margin:1.3px 0}
+.r1 .skill b{color:#000}
+.r1 .job{margin:7px 0 2px}
+.r1 .job .jobtop{display:flex;align-items:baseline;justify-content:space-between;gap:14px}
+.r1 .job .jobhead{font-weight:700;font-size:10pt}
+.r1 .job .jobwhen{color:#595959;font-size:9pt;white-space:nowrap}
+.r1 .job .ti{color:#404040;font-size:9pt;margin:1px 0 2px}
 .r1 ul{margin:2px 0 3px;padding-left:16px}
-.r1 li{margin:1.5px 0}
-.r1 .edu{margin:1.5px 0}
-.r1 .edu.sub{margin-left:14px;color:#555}
+.r1 li{margin:1px 0}
+.r1 li strong{color:#000}
+.r1 .edu{margin:1.3px 0}
+.r1 .edu.sub{margin-left:14px;color:#404040}
 `;
 function mb(s){return esc(s||'').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');}
 function trimLead(s){s=(s||'').replace(/\s+/g,' ').trim();const m=s.match(/^[^.。!?\n]+[.。!?]?/);let t=m?m[0]:s;if(t.length>120)t=t.slice(0,118)+'…';return t;}
@@ -379,10 +378,10 @@ function resumeInner(rs){
   const expBlock=()=>{ if(ei>=exps.length)return '';
     const e=exps[ei++]; let s='';
     if(!expHeader){s+=`<h2>${L.e}</h2>`;expHeader=true;}
+    const head=esc(e.company||'')+(e.title?`  |  ${esc(e.title)}`:'');
     const when=[e.period,e.location].filter(Boolean).map(esc).join('  ·  ');
     s+=`<div class="job">`
-      +`<div class="jobtop"><span class="co">${esc(e.company)}</span>${when?`<span class="jobwhen">${when}</span>`:''}</div>`
-      +`<div class="jobtitle">${esc(e.title||'')}${e.domain?`<span class="jobdom">  |  ${esc(e.domain)}</span>`:''}</div>`;
+      +`<div class="jobtop"><span class="jobhead">${head}</span>${when?`<span class="jobwhen">${when}</span>`:''}</div>`;
     if(e.context)s+=`<div class="ti">${mb(e.context)}</div>`;
     if(e.bullets&&e.bullets.length)s+='<ul>'+e.bullets.map(b=>`<li>${mb(b)}</li>`).join('')+'</ul>';
     return s+'</div>';
