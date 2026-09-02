@@ -729,6 +729,13 @@ $('#saveBtn').onclick=async()=>{
 
 /* ---------- ASSEMBLE tab — 좌: 선택(체크) / 우: 드래그 순서 미리보기 ---------- */
 function pj(pid){return state.cat.projects.find(x=>x.id===pid);}
+/* 이력서 기본 angle: 프로젝트가 의도한 주 angle(frontmatter angles[0] 우선순위) 중
+   실제 variant 가 있는 첫 번째 → 헤드라인 문장이 뽑히게. 없으면 variant 알파벳 첫. */
+function resumeAngleDefault(p){
+  const va=p.variant_angles||[];
+  const primary=(p.angles||[]).find(a=>va.includes(a));
+  return primary?[primary]:va.slice(0,1);
+}
 
 /* 공통 드래그 정렬: 컨테이너의 '직접 자식' .dragcard 만 재배치 → onDrop(newTokenOrder) */
 function enableDrag(container,onDrop,onStart){
@@ -783,7 +790,7 @@ function selectProjectRow(mode,pid){
   el.querySelector('[data-inc]').onchange=e=>{
     if(e.target.checked){st.inc.add(pid);
       if(!(st.angles[pid]&&st.angles[pid].length))
-        st.angles[pid]=(mode==='resume')?p.variant_angles.slice(0,1):p.variant_angles.slice();
+        st.angles[pid]=(mode==='resume')?resumeAngleDefault(p):p.variant_angles.slice();
     }else st.inc.delete(pid);
     renderMode(mode);
   };
@@ -826,7 +833,7 @@ function selectAll(mode,on){
     state.cat.experiences.forEach(e=>on?R.exp.add(e.sid):R.exp.delete(e.sid));
     state.projOrder.forEach(pid=>{
       if(on){R.inc.add(pid); const p=pj(pid);
-        if(!(R.angles[pid]&&R.angles[pid].length))R.angles[pid]=p.variant_angles.slice(0,1);}
+        if(!(R.angles[pid]&&R.angles[pid].length))R.angles[pid]=resumeAngleDefault(p);}
       else R.inc.delete(pid);
     });
   }else{
