@@ -1,13 +1,17 @@
 """포트폴리오를 가로(16:9) PPTX로 생성.
 
 app/index.html 의 포트폴리오 상세 카드(디자인 포트폴리오)와 동일한 색·요소를 그대로 쓰되,
-세로로 쌓이던 레이아웃만 한 슬라이드(가로) 안에 들어가도록 2단(컬럼)으로 재배치한다.
-프로젝트 1개 = 콘텐츠 슬라이드 1장. 다이어그램 이미지는 슬라이드 안에 넣지 않고
-(자리가 없어서) 프로젝트 슬라이드 바로 뒤에 이미지 전용 슬라이드로 분리한다.
+세로로 쌓이던 레이아웃을 한 슬라이드(가로) 안에 들어가도록 재배치한다.
+프로젝트 1개 = 슬라이드 1장 (분리 슬라이드 없음).
 
-전체 덱에서 본문 폰트 크기는 하나로 통일한다 (프로젝트마다 분량이 달라도 슬라이드마다
-다른 크기로 보이지 않도록, 가장 분량이 많은 프로젝트 기준으로 전체에 적용할 크기를 먼저
-계산한 뒤 모든 슬라이드를 그 크기로 그린다).
+레이아웃:
+- 헤더(PROJECT 번호·제목·메타·칩·역할태그). 제목이 길어 2줄이 되면 아래 요소를 밀어낸다.
+- 본문: 문제정의 → 나의역할 → 주요성과 를 읽기 순서 그대로 **균등 2컬럼에 높이 균형 분할**
+  (한쪽만 넘치지 않게). 폰트는 **프로젝트별로** 콘텐츠 밀도에 맞는 최대 크기를 고른다.
+- 다이어그램: 같은 슬라이드 **하단 풀폭 스트립**에 배치 (여러 장이면 가로로 나란히).
+
+견고성: 텍스트 박스는 자동 축소(TEXT_TO_FIT)로 실제 PowerPoint 렌더 편차에서도 넘치지 않게 하고,
+한글/영문 폭을 구분해 줄 수를 추정한다.
 
 portfolio_pptx_bytes(identity, target, parts, lang, root_dir) -> (bytes, warnings)
 """
@@ -19,7 +23,7 @@ import re
 from pptx import Presentation
 from pptx.util import Inches, Pt, Emu
 from pptx.dml.color import RGBColor
-from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
+from pptx.enum.text import PP_ALIGN, MSO_ANCHOR, MSO_AUTO_SIZE
 from pptx.enum.shapes import MSO_SHAPE
 
 # ---- app/index.html 의 --pri 계열 팔레트와 동일 ----
@@ -78,11 +82,27 @@ def diagram_map(root_dir: str) -> dict:
 
 # ---------- 텍스트 폭 추정 (자동 줄바꿈 높이 계산용) ----------
 
+def _text_width_units(s):
+    """문자열의 시각적 폭을 em 단위로 추정. 한중일(CJK)은 ~1.0em(정사각),
+    영문·숫자·기호는 ~0.55em(좁음). 이래야 영/한 혼용에서 줄 수를 정확히 잡는다."""
+    u = 0.0
+    for ch in str(s):
+        if ('가' <= ch <= '힣' or '぀' <= ch <= 'ヿ'
+                or '一' <= ch <= '鿿' or '㄰' <= ch <= '㆏'):
+            u += 1.0
+        elif ch == ' ':
+            u += 0.35
+        else:
+            u += 0.55
+    return u
+
+
 def est_lines(text, width_in, size_pt):
     if not text:
         return 0
-    cpl = max(6, int((width_in * 72) / (size_pt * CHAR_W)))
-    return max(1, math.ceil(len(str(text)) / cpl))
+    # 한 줄에 들어가는 em 폭 (CHAR_W 를 CJK 1em 폭 계수로 사용, 넉넉하게 잡아 넘침 방지)
+    units_per_line = max(6.0, (width_in * 72) / (size_pt * CHAR_W))
+    return max(1, math.ceil(_text_width_units(text) / units_per_line))
 
 
 def est_h(text, width_in, size_pt, line_gap=LINE_GAP):
@@ -145,7 +165,7 @@ def _rect(slide, x, y, w, h, color, shape=MSO_SHAPE.RECTANGLE, line_color=None, 
     return sh
 
 
-def _textbox(slide, x, y, w, h, anchor=None):
+def _textbox(slide, x, y, w, h, anchor=None, fit=False):
     tb = slide.shapes.add_textbox(Inches(x), Inches(y), Inches(w), Inches(h))
     tf = tb.text_frame
     tf.word_wrap = True
@@ -153,6 +173,9 @@ def _textbox(slide, x, y, w, h, anchor=None):
     tf.margin_top = tf.margin_bottom = Pt(0)
     if anchor is not None:
         tf.vertical_anchor = anchor
+    if fit:
+        # 안전망: 추정보다 텍스트가 길어도 박스 안에서 폰트를 살짝 줄여 겹침/넘침 방지
+        tf.auto_size = MSO_AUTO_SIZE.TEXT_TO_FIT_SHAPE
     return tb, tf
 
 
@@ -279,7 +302,7 @@ def _draw_block(slide, block, x, y, width_in, size, compact=0.0):
                     h=PILL_LABEL_H - 0.02, border=PILL_BORDER)
         ty = y + pill_h
         th = est_h(block["text"], width_in, size, _lg(compact))
-        _, tf = _textbox(slide, x, ty, width_in, th + 0.06)
+        _, tf = _textbox(slide, x, ty, width_in, th + 0.06, fit=True)
         tf.paragraphs[0].line_spacing = _lg(compact)
         _rich(tf.paragraphs[0], block["text"], size, BODY)
         return pill_h + th + _g(0.11, compact)
@@ -291,7 +314,7 @@ def _draw_block(slide, block, x, y, width_in, size, compact=0.0):
         cy = y + pill_h
         for it in block["items"]:
             ih = est_h(it, width_in - 0.18, size, _lg(compact))
-            _, tf = _textbox(slide, x, cy, width_in, ih + 0.05)
+            _, tf = _textbox(slide, x, cy, width_in, ih + 0.05, fit=True)
             p = tf.paragraphs[0]
             p.line_spacing = _lg(compact)
             _run(p, "– ", size, PRI, True)
@@ -311,7 +334,7 @@ def _draw_block(slide, block, x, y, width_in, size, compact=0.0):
             cy += lh + _g(0.07, compact)
         for it in block["items"]:
             ih = est_h(it, width_in - 0.24, size - 0.5, _lg(compact))
-            _, tf = _textbox(slide, x + 0.18, cy, width_in - 0.18, ih + 0.05)
+            _, tf = _textbox(slide, x + 0.18, cy, width_in - 0.18, ih + 0.05, fit=True)
             p = tf.paragraphs[0]
             p.line_spacing = _lg(compact)
             _run(p, "▹ ", size - 0.5, PRI, True)
@@ -327,7 +350,8 @@ def _draw_block(slide, block, x, y, width_in, size, compact=0.0):
               line_color=IMPACT_BORDER, line_w=0.75, radius=0.12)
         _, mtf = _textbox(slide, x + 0.14, y + pad / 2 - 0.04, 0.3, 0.3)
         _run(mtf.paragraphs[0], "✦", size + 1, PRI, True)
-        _, tf = _textbox(slide, x + 0.44, y + pad / 2 - 0.03, width_in - 0.58, th + 0.06, anchor=MSO_ANCHOR.MIDDLE)
+        _, tf = _textbox(slide, x + 0.44, y + pad / 2 - 0.03, width_in - 0.58, th + 0.06,
+                         anchor=MSO_ANCHOR.MIDDLE, fit=True)
         p = tf.paragraphs[0]
         p.line_spacing = _lg(compact)
         _rich(p, block["text"], size, IMPACT_TEXT, True)
@@ -344,79 +368,92 @@ def _render_column(slide, blocks, x, y0, width_in, size, compact=0.0):
 
 # ---------- 프로젝트 → 블록 모델 ----------
 
-def _project_blocks(part, lang):
+def _project_block_list(part, lang):
+    """프로젝트 본문을 읽기 순서(문제정의 → 나의역할 → 주요성과)의 단일 블록 리스트로.
+    이 리스트를 두 컬럼에 높이 균형으로 나눠 배치한다."""
     is_ko = lang != "en"
     L = {"prob": "문제 정의", "role": "나의 역할", "imp": "주요 성과"} if is_ko \
         else {"prob": "PROBLEM", "role": "WHAT I DID", "imp": "IMPACT"}
-    left, right = [], []
+    blocks = []
 
     problem = part.get("problem") or {}
     if problem.get("goal") or problem.get("hurdle"):
-        left.append({"type": "kh", "text": L["prob"]})
+        blocks.append({"type": "kh", "text": L["prob"]})
         if problem.get("goal"):
-            left.append({"type": "pill_text",
-                         "label": "풀고자 한 문제" if is_ko else "Goal", "text": problem["goal"]})
+            blocks.append({"type": "pill_text",
+                           "label": "풀고자 한 문제" if is_ko else "Goal", "text": problem["goal"]})
         hlines = _hurdle_lines(problem.get("hurdle"))
         if hlines:
-            left.append({"type": "pill_bullets",
-                         "label": "제약과 어려움" if is_ko else "Constraints & hurdles", "items": hlines})
+            blocks.append({"type": "pill_bullets",
+                           "label": "제약과 어려움" if is_ko else "Constraints & hurdles", "items": hlines})
 
     role_groups = [g for g in (part.get("role_groups") or []) if not g.get("hidden")]
     if role_groups:
-        left.append({"type": "kh", "text": L["role"]})
+        blocks.append({"type": "kh", "text": L["role"]})
         for g in role_groups:
-            left.append({"type": "group", "label": g.get("label") or "", "items": g.get("items") or []})
+            blocks.append({"type": "group", "label": g.get("label") or "", "items": g.get("items") or []})
 
     impact = [it for it in (part.get("impact") or []) if not it.get("hidden")]
     if impact:
-        right.append({"type": "kh", "text": L["imp"]})
+        blocks.append({"type": "kh", "text": L["imp"]})
         for it in impact:
-            right.append({"type": "impact", "text": it.get("value") or ""})
+            blocks.append({"type": "impact", "text": it.get("value") or ""})
 
-    return left, right
+    return blocks
 
 
-_SIZE_STEPS = (11.5, 11, 10.5, 10, 9.5, 9, 8.5, 8, 7.5)
+def _split_columns(blocks, col_w, size, compact=0.0):
+    """블록 리스트를 읽기 순서를 유지하며 두 컬럼으로 높이 균형 분할.
+    컬럼 끝에 섹션 헤더(kh)만 남지 않게 보정한다."""
+    if not blocks:
+        return [], []
+    hs = [_block_height(b, col_w, size, compact) for b in blocks]
+    total = sum(hs)
+    # 누적 높이가 절반을 처음 넘는 지점을 분할점으로
+    acc, k = 0.0, len(blocks)
+    for i, h in enumerate(hs):
+        if acc + h > total / 2 and i > 0:
+            # i 앞에서 자를지(acc) i 뒤에서 자를지(acc+h) 중 더 균형인 쪽
+            k = i if abs(acc - total / 2) <= abs(acc + h - total / 2) else i + 1
+            break
+        acc += h
+    k = max(1, min(k, len(blocks) - 1)) if len(blocks) > 1 else len(blocks)
+    # 컬럼1의 마지막이 kh(헤더)면 다음 컬럼으로 넘겨 고아 헤더 방지
+    while k > 1 and blocks[k - 1]["type"] == "kh":
+        k -= 1
+    return blocks[:k], blocks[k:]
+
+
+_SIZE_STEPS = (11.5, 11, 10.5, 10, 9.5, 9, 8.5, 8, 7.5, 7, 6.5)
 _COMPACT_STEPS = (0.0, 0.25, 0.5, 0.75, 1.0)
 
 
-SAFETY_MARGIN_IN = 0.08  # 줄바꿈 추정 오차 대비 여유
+SAFETY_MARGIN_IN = 0.16  # 줄바꿈 추정 오차 대비 여유 (실제 PowerPoint 렌더 편차 흡수)
 
 
-def _fits(left, right, left_w, right_w, body_h, size, compact=0.0):
-    budget = body_h - SAFETY_MARGIN_IN
-    return (_column_height(left, left_w, size, compact) <= budget and
-            _column_height(right, right_w, size, compact) <= budget)
+def _fits(blocks, col_w, text_h, size, compact=0.0):
+    budget = text_h - SAFETY_MARGIN_IN
+    c1, c2 = _split_columns(blocks, col_w, size, compact)
+    return (_column_height(c1, col_w, size, compact) <= budget and
+            _column_height(c2, col_w, size, compact) <= budget)
 
 
-def _min_compact(left, right, left_w, right_w, body_h, size):
-    """이 폰트 크기로 다 들어가게 하려면 여백을 얼마나 줄여야 하는지 (0=넉넉, 1=최대 압축).
-
-    최대 압축으로도 안 들어가면 None.
-    """
+def _min_compact(blocks, col_w, text_h, size):
+    """이 폰트 크기로 두 컬럼에 다 들어가게 할 최소 압축값 (0=넉넉, 1=최대). 안 되면 None."""
     for c in _COMPACT_STEPS:
-        if _fits(left, right, left_w, right_w, body_h, size, c):
+        if _fits(blocks, col_w, text_h, size, c):
             return c
     return None
 
 
-def _pick_deck_layout(projects_blocks, left_w, right_w, body_hs):
-    """덱 전체에 쓸 단일 폰트 크기 + 프로젝트별 compact 값을 계산.
-
-    폰트 크기는 절대 슬라이드마다 달라지지 않는다 — 분량 차이는 여백(compact)만 흡수한다.
-    """
+def _pick_project_layout(blocks, col_w, text_h):
+    """프로젝트별로 두 컬럼에 들어가는 '가장 큰' 폰트 크기 + 그때의 최소 압축값을 고른다.
+    (덱 통일 폰트 대신 슬라이드별 최적화 — 분량 가벼운 프로젝트는 크게, 무거운 것만 작게.)"""
     for size in _SIZE_STEPS:
-        compacts, ok = [], True
-        for (left, right), body_h in zip(projects_blocks, body_hs):
-            c = _min_compact(left, right, left_w, right_w, body_h, size)
-            if c is None:
-                ok = False
-                break
-            compacts.append(c)
-        if ok:
-            return size, compacts
-    # 안전망: 가장 작은 크기 + 최대 압축 (그래도 못 들어가면 살짝 넘칠 수 있음)
-    return _SIZE_STEPS[-1], [1.0] * len(projects_blocks)
+        c = _min_compact(blocks, col_w, text_h, size)
+        if c is not None:
+            return size, c
+    return _SIZE_STEPS[-1], 1.0
 
 
 # ---------- 카드 프레임 (배경 + 흰 카드) ----------
@@ -437,95 +474,128 @@ def _card_frame(slide):
 
 # ---------- 헤더 (레이아웃 계산과 그리기를 분리해 모든 슬라이드가 같은 기준선을 쓰게 한다) ----------
 
-def _header_geometry(part, lang, x0, x1):
-    """헤더(제목·메타·칩·구분선·역할태그) 를 그린 뒤 본문이 시작될 y 를 계산 (그리지 않음)."""
+TITLE_PT = 20
+
+
+def _header_layout(part, lang, content_w):
+    """헤더 요소들의 y 오프셋(카드 콘텐츠 top=y0 기준)을 계산. 제목 줄 수를 실제로
+    측정해 여러 줄 제목이면 메타·칩·본문을 그만큼 아래로 민다 (그리기·측정 공용)."""
     is_ko = lang != "en"
-    content_w = x1 - x0
-    y = 0.76  # 타이틀 아래
+    title = part.get("title") or ""
+    # 제목 줄 수를 넉넉히(1.06배) 잡아 실제 PowerPoint 에서 2줄이 돼도 겹치지 않게
+    title_lines = max(1, math.ceil(est_lines(title, content_w, TITLE_PT) * 1.06))
+    title_h = title_lines * (TITLE_PT * 1.18) / 72.0
+    y_title = 0.21
+    y_meta = y_title + title_h + 0.05
+    meta = "   ·   ".join(x for x in [part.get("org"), part.get("period")] if x)
+    y_chips = y_meta + (0.24 if meta else 0.0)
     chips = [(a, PRI, WHITE, None) for a in (part.get("angles") or [])] + \
             [(t, CHIP, PRI_INK, None) for t in (part.get("tags") or [])]
     chip_h = _chip_rows_height(chips, content_w) if chips else 0.0
-    chip_bottom = y + (chip_h if chips else 0.0)
-    div_y = chip_bottom + 0.08
+    div_y = y_chips + chip_h + 0.08
     role = role_tag_parts(part.get("role") or "", is_ko)
-    row_h = 0.28 if role else 0.0
-    body_top = div_y + 0.1 + row_h
-    return body_top, chips
-
-
-def _draw_header(slide, part, num, lang, x0, y0, x1):
-    is_ko = lang != "en"
-    content_w = x1 - x0
-
-    _label(slide, x0, y0, content_w, 0.2, f"PROJECT {num:02d}", 10.5, PRI, True)
-    _label(slide, x0, y0 + 0.21, content_w, 0.4, part.get("title") or "", 20, INK, True)
-
-    meta = "   ·   ".join(x for x in [part.get("org"), part.get("period")] if x)
-    y_meta = y0 + 0.58
-    if meta:
-        _label(slide, x0, y_meta, content_w, 0.2, meta, 10.5, MUT, False)
-
-    y_chips = y0 + 0.76
-    chips = [(a, PRI, WHITE, None) for a in (part.get("angles") or [])] + \
-            [(t, CHIP, PRI_INK, None) for t in (part.get("tags") or [])]
-    chip_bottom = y_chips
-    if chips:
-        placed, rows = _layout_chips(x0, content_w, chips)
-        for text, fill, color, border, cx, row in placed:
-            _draw_chip(slide, cx, y_chips + row * (0.27 + 0.08), text, fill, color, border=border)
-        chip_bottom = y_chips + rows * 0.27 + (rows - 1) * 0.08
-
-    div_y = chip_bottom + 0.08
-    _rect(slide, x0, div_y, content_w, Pt(1) / 914400, LINE)
-
     row_y = div_y + 0.1
-    role = role_tag_parts(part.get("role") or "", is_ko)
-    if role:
-        scope, detail = role
-        w = _draw_chip(slide, x0, row_y, scope, PRI, WHITE, size=10, bold=True, h=0.28)
+    row_h = 0.28 if role else 0.0
+    body_top = div_y + 0.1 + row_h + (0.08 if role else 0.02)
+    return {"title": title, "title_h": title_h, "y_title": y_title, "meta": meta,
+            "y_meta": y_meta, "chips": chips, "y_chips": y_chips, "div_y": div_y,
+            "role": role, "row_y": row_y, "body_top": body_top}
+
+
+def _draw_header(slide, part, num, lang, x0, y0, x1, hl):
+    content_w = x1 - x0
+    _label(slide, x0, y0, content_w, 0.2, f"PROJECT {num:02d}", 10.5, PRI, True)
+    _, ttf = _textbox(slide, x0, y0 + hl["y_title"], content_w, hl["title_h"] + 0.12)
+    _run(ttf.paragraphs[0], hl["title"], TITLE_PT, INK, True)
+
+    if hl["meta"]:
+        _label(slide, x0, y0 + hl["y_meta"], content_w, 0.2, hl["meta"], 10.5, MUT, False)
+
+    if hl["chips"]:
+        placed, _rows = _layout_chips(x0, content_w, hl["chips"])
+        for text, fill, color, border, cx, row in placed:
+            _draw_chip(slide, cx, y0 + hl["y_chips"] + row * (0.27 + 0.08), text, fill, color, border=border)
+
+    _rect(slide, x0, y0 + hl["div_y"], content_w, Pt(1) / 914400, LINE)
+
+    if hl["role"]:
+        scope, detail = hl["role"]
+        ry = y0 + hl["row_y"]
+        w = _draw_chip(slide, x0, ry, scope, PRI, WHITE, size=10, bold=True, h=0.28)
         if detail:
-            _label(slide, x0 + w + 0.14, row_y + 0.035, content_w - w - 0.14, 0.24, detail, 10.5, MUT, False)
+            _label(slide, x0 + w + 0.14, ry + 0.035, content_w - w - 0.14, 0.24, detail, 10.5, MUT, False)
 
 
 # ---------- 슬라이드 조립 ----------
 
-def add_project_slide(prs, part, num, lang, size, compact, left_w, right_w, gap):
-    slide = _blank_slide(prs)
-    x0, y0, x1, y1 = _card_frame(slide)
-    _draw_header(slide, part, num, lang, x0, y0, x1)
-    body_top, _ = _header_geometry(part, lang, x0, x1)
-    body_top = y0 + body_top
-
-    left_blocks, right_blocks = _project_blocks(part, lang)
-    right_x = x0 + left_w + gap
-    _render_column(slide, left_blocks, x0, body_top, left_w, size, compact)
-    _render_column(slide, right_blocks, right_x, body_top, right_w, size, compact)
+# 다이어그램 하단 스트립: 이미지 장수에 따른 높이 (본문 텍스트 영역에서 미리 빼둔다)
+def _img_strip_h(n):
+    if n <= 0:
+        return 0.0
+    return 1.5 if n == 1 else (1.65 if n == 2 else 1.8)
 
 
-def add_image_slides(prs, part, files, root_dir):
-    warnings = []
+def _draw_image_strip(slide, files, root_dir, lang, x0, w_total, y_top, band_h):
+    """다이어그램들을 하단 풀폭 스트립에 가로로 나란히 배치 (비율 유지·중앙 정렬·테두리)."""
+    is_ko = lang != "en"
+    warnings, valid = [], []
     for fn in files:
         fp = os.path.join(root_dir, "assets", "diagrams", fn)
-        if not os.path.isfile(fp):
+        if os.path.isfile(fp):
+            valid.append(fp)
+        else:
             warnings.append(f"이미지 없음: {fn}")
-            continue
-        slide = _blank_slide(prs)
-        x0, y0, x1, y1 = _card_frame(slide)
-        _label(slide, x0, y0, x1 - x0, 0.34, part.get("title") or "", 15, PRI_INK, True)
-        img_top = y0 + 0.5
-        max_w_in = x1 - x0
-        max_h_in = y1 - img_top
+    if not valid:
+        return warnings
+
+    _label(slide, x0, y_top, w_total, 0.16, "다이어그램" if is_ko else "Diagram", 8.5, MUT, True)
+    y_top += 0.2
+    band_h -= 0.2
+    if band_h < 0.3:
+        return warnings
+
+    n = len(valid)
+    hgap = 0.16
+    slot_w = (w_total - hgap * (n - 1)) / n
+    for i, fp in enumerate(valid):
+        sx = x0 + i * (slot_w + hgap)
         try:
             pic = slide.shapes.add_picture(fp, Emu(0), Emu(0))
         except Exception:
-            warnings.append(f"이미지 삽입 실패: {fn}")
+            warnings.append(f"이미지 삽입 실패: {os.path.basename(fp)}")
             continue
         iw, ih = pic.width, pic.height
-        scale = min(Inches(max_w_in) / iw, Inches(max_h_in) / ih)
-        new_w, new_h = int(iw * scale), int(ih * scale)
-        pic.width, pic.height = new_w, new_h
-        pic.left = int(Inches(x0) + (Inches(max_w_in) - new_w) / 2)
-        pic.top = int(Inches(img_top) + (Inches(max_h_in) - new_h) / 2)
+        scale = min(Inches(slot_w) / iw, Inches(band_h) / ih)
+        nw, nh = int(iw * scale), int(ih * scale)
+        pic.width, pic.height = nw, nh
+        pic.left = int(Inches(sx) + (Inches(slot_w) - nw) / 2)
+        pic.top = int(Inches(y_top) + (Inches(band_h) - nh) / 2)
+        pic.line.color.rgb = LINE
+        pic.line.width = Pt(0.75)
+        pic.shadow.inherit = False
+    return warnings
+
+
+def add_project_slide(prs, part, num, lang, size, compact, col_w, gap, files, root_dir):
+    slide = _blank_slide(prs)
+    x0, y0, x1, y1 = _card_frame(slide)
+    hl = _header_layout(part, lang, x1 - x0)
+    _draw_header(slide, part, num, lang, x0, y0, x1, hl)
+    body_top = y0 + hl["body_top"]
+
+    strip_h = _img_strip_h(len(files))
+    text_bottom = y1 - (strip_h + 0.14 if strip_h else 0.0)
+
+    blocks = _project_block_list(part, lang)
+    c1, c2 = _split_columns(blocks, col_w, size, compact)
+    _render_column(slide, c1, x0, body_top, col_w, size, compact)
+    _render_column(slide, c2, x0 + col_w + gap, body_top, col_w, size, compact)
+
+    # 다이어그램: 하단 풀폭 스트립 (텍스트 영역과 이미 분리해 두어 겹치지 않음)
+    warnings = []
+    if files and strip_h:
+        warnings += _draw_image_strip(slide, files, root_dir, lang, x0, x1 - x0,
+                                      text_bottom + 0.14, strip_h)
     return warnings
 
 
@@ -554,30 +624,26 @@ def portfolio_pptx_bytes(identity: dict, target: str, parts: list, lang: str, ro
 
     projects = [p for p in parts if p.get("kind") == "project"]
 
-    # 콘텐츠 영역/컬럼 폭은 모든 슬라이드가 동일 (카드 패딩 고정)
+    # 콘텐츠 영역: 균등 2컬럼 (본문 블록을 두 컬럼에 균형 분할)
     content_w = SLIDE_W_IN - CARD_MARGIN * 2 - CARD_PAD_X * 2
-    left_w = round(content_w * LEFT_RATIO, 3)
-    right_w = round(content_w - left_w - COL_GAP, 3)
+    col_w = round((content_w - COL_GAP) / 2, 3)
     y1 = SLIDE_H_IN - CARD_MARGIN - CARD_PAD_BOTTOM
 
-    # 1) 전체 덱에 쓸 단일 폰트 크기를 먼저 결정. 분량이 프로젝트마다 달라도 폰트는
-    #    절대 바뀌지 않고, 그 차이는 프로젝트별 여백(compact)만으로 흡수한다.
-    projects_blocks, body_hs = [], []
-    for part in projects:
-        blocks = _project_blocks(part, lang)
-        body_top, _ = _header_geometry(part, lang, 0.0, content_w)
-        body_hs.append(y1 - (CARD_MARGIN + CARD_PAD_TOP + body_top))
-        projects_blocks.append(blocks)
-    deck_size, compacts = _pick_deck_layout(projects_blocks, left_w, right_w, body_hs)
-
-    # 2) 동일한 크기로 전체 슬라이드 렌더 (여백만 프로젝트별로 다름)
     dmap = diagram_map(root_dir)
+
+    # 프로젝트별로 최적 폰트 크기·압축을 계산(이미지 있으면 하단 스트립만큼 텍스트 영역을 뺀다)
+    # 후 렌더. 슬라이드마다 콘텐츠 밀도에 맞는 크기를 써서 가벼운 프로젝트는 크게 보인다.
     warnings = []
-    for num, (part, compact) in enumerate(zip(projects, compacts), start=1):
-        add_project_slide(prs, part, num, lang, deck_size, compact, left_w, right_w, COL_GAP)
+    for num, part in enumerate(projects, start=1):
         files = dmap.get(part.get("id"), [])
-        if files:
-            warnings += add_image_slides(prs, part, files, root_dir)
+        blocks = _project_block_list(part, lang)
+        body_top = _header_layout(part, lang, content_w)["body_top"]
+        body_h = y1 - (CARD_MARGIN + CARD_PAD_TOP + body_top)
+        strip_h = _img_strip_h(len(files))
+        text_h = body_h - (strip_h + 0.14 if strip_h else 0.0)
+        size, compact = _pick_project_layout(blocks, col_w, text_h)
+        warnings += add_project_slide(prs, part, num, lang, size, compact,
+                                      col_w, COL_GAP, files, root_dir)
 
     bio = io.BytesIO()
     prs.save(bio)
