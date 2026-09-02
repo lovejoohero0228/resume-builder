@@ -6,9 +6,9 @@ app/index.html 의 포트폴리오 상세 카드(디자인 포트폴리오)와 �
 
 레이아웃:
 - 헤더(PROJECT 번호·제목·메타·칩·역할태그). 제목이 길어 2줄이 되면 아래 요소를 밀어낸다.
-- 본문: 문제정의 → 나의역할 → 주요성과 를 읽기 순서 그대로 **균등 2컬럼에 높이 균형 분할**
-  (한쪽만 넘치지 않게). 폰트는 **프로젝트별로** 콘텐츠 밀도에 맞는 최대 크기를 고른다.
-- 다이어그램: 같은 슬라이드 **하단 풀폭 스트립**에 배치 (여러 장이면 가로로 나란히).
+- 본문: **좌 컬럼 = 문제정의 + 나의역할, 우 컬럼 = 주요 성과** (고정 2컬럼).
+- 다이어그램: **우측(성과) 아래 남는 여백**에 배치 (여러 장이면 세로로 나란히).
+- 폰트: 덱 전체 **단일(통일) 크기** — 슬라이드마다 바뀌지 않는다. 분량 차이는 여백(compact)만 흡수.
 
 견고성: 텍스트 박스는 자동 축소(TEXT_TO_FIT)로 실제 PowerPoint 렌더 편차에서도 넘치지 않게 하고,
 한글/영문 폭을 구분해 줄 수를 추정한다.
@@ -368,60 +368,37 @@ def _render_column(slide, blocks, x, y0, width_in, size, compact=0.0):
 
 # ---------- 프로젝트 → 블록 모델 ----------
 
-def _project_block_list(part, lang):
-    """프로젝트 본문을 읽기 순서(문제정의 → 나의역할 → 주요성과)의 단일 블록 리스트로.
-    이 리스트를 두 컬럼에 높이 균형으로 나눠 배치한다."""
+def _project_blocks(part, lang):
+    """좌 컬럼 = 문제정의 + 나의역할, 우 컬럼 = 주요 성과. (고정 2컬럼)"""
     is_ko = lang != "en"
     L = {"prob": "문제 정의", "role": "나의 역할", "imp": "주요 성과"} if is_ko \
         else {"prob": "PROBLEM", "role": "WHAT I DID", "imp": "IMPACT"}
-    blocks = []
+    left, right = [], []
 
     problem = part.get("problem") or {}
     if problem.get("goal") or problem.get("hurdle"):
-        blocks.append({"type": "kh", "text": L["prob"]})
+        left.append({"type": "kh", "text": L["prob"]})
         if problem.get("goal"):
-            blocks.append({"type": "pill_text",
-                           "label": "풀고자 한 문제" if is_ko else "Goal", "text": problem["goal"]})
+            left.append({"type": "pill_text",
+                         "label": "풀고자 한 문제" if is_ko else "Goal", "text": problem["goal"]})
         hlines = _hurdle_lines(problem.get("hurdle"))
         if hlines:
-            blocks.append({"type": "pill_bullets",
-                           "label": "제약과 어려움" if is_ko else "Constraints & hurdles", "items": hlines})
+            left.append({"type": "pill_bullets",
+                         "label": "제약과 어려움" if is_ko else "Constraints & hurdles", "items": hlines})
 
     role_groups = [g for g in (part.get("role_groups") or []) if not g.get("hidden")]
     if role_groups:
-        blocks.append({"type": "kh", "text": L["role"]})
+        left.append({"type": "kh", "text": L["role"]})
         for g in role_groups:
-            blocks.append({"type": "group", "label": g.get("label") or "", "items": g.get("items") or []})
+            left.append({"type": "group", "label": g.get("label") or "", "items": g.get("items") or []})
 
     impact = [it for it in (part.get("impact") or []) if not it.get("hidden")]
     if impact:
-        blocks.append({"type": "kh", "text": L["imp"]})
+        right.append({"type": "kh", "text": L["imp"]})
         for it in impact:
-            blocks.append({"type": "impact", "text": it.get("value") or ""})
+            right.append({"type": "impact", "text": it.get("value") or ""})
 
-    return blocks
-
-
-def _split_columns(blocks, col_w, size, compact=0.0):
-    """블록 리스트를 읽기 순서를 유지하며 두 컬럼으로 높이 균형 분할.
-    컬럼 끝에 섹션 헤더(kh)만 남지 않게 보정한다."""
-    if not blocks:
-        return [], []
-    hs = [_block_height(b, col_w, size, compact) for b in blocks]
-    total = sum(hs)
-    # 누적 높이가 절반을 처음 넘는 지점을 분할점으로
-    acc, k = 0.0, len(blocks)
-    for i, h in enumerate(hs):
-        if acc + h > total / 2 and i > 0:
-            # i 앞에서 자를지(acc) i 뒤에서 자를지(acc+h) 중 더 균형인 쪽
-            k = i if abs(acc - total / 2) <= abs(acc + h - total / 2) else i + 1
-            break
-        acc += h
-    k = max(1, min(k, len(blocks) - 1)) if len(blocks) > 1 else len(blocks)
-    # 컬럼1의 마지막이 kh(헤더)면 다음 컬럼으로 넘겨 고아 헤더 방지
-    while k > 1 and blocks[k - 1]["type"] == "kh":
-        k -= 1
-    return blocks[:k], blocks[k:]
+    return left, right
 
 
 _SIZE_STEPS = (11.5, 11, 10.5, 10, 9.5, 9, 8.5, 8, 7.5, 7, 6.5)
@@ -431,29 +408,36 @@ _COMPACT_STEPS = (0.0, 0.25, 0.5, 0.75, 1.0)
 SAFETY_MARGIN_IN = 0.16  # 줄바꿈 추정 오차 대비 여유 (실제 PowerPoint 렌더 편차 흡수)
 
 
-def _fits(blocks, col_w, text_h, size, compact=0.0):
-    budget = text_h - SAFETY_MARGIN_IN
-    c1, c2 = _split_columns(blocks, col_w, size, compact)
-    return (_column_height(c1, col_w, size, compact) <= budget and
-            _column_height(c2, col_w, size, compact) <= budget)
+def _fits(left, right, left_w, right_w, body_h, size, compact=0.0):
+    budget = body_h - SAFETY_MARGIN_IN
+    return (_column_height(left, left_w, size, compact) <= budget and
+            _column_height(right, right_w, size, compact) <= budget)
 
 
-def _min_compact(blocks, col_w, text_h, size):
+def _min_compact(left, right, left_w, right_w, body_h, size):
     """이 폰트 크기로 두 컬럼에 다 들어가게 할 최소 압축값 (0=넉넉, 1=최대). 안 되면 None."""
     for c in _COMPACT_STEPS:
-        if _fits(blocks, col_w, text_h, size, c):
+        if _fits(left, right, left_w, right_w, body_h, size, c):
             return c
     return None
 
 
-def _pick_project_layout(blocks, col_w, text_h):
-    """프로젝트별로 두 컬럼에 들어가는 '가장 큰' 폰트 크기 + 그때의 최소 압축값을 고른다.
-    (덱 통일 폰트 대신 슬라이드별 최적화 — 분량 가벼운 프로젝트는 크게, 무거운 것만 작게.)"""
+def _pick_deck_layout(projects_blocks, left_w, right_w, body_hs):
+    """덱 전체에 쓸 '단일' 폰트 크기 + 프로젝트별 compact 값을 계산.
+
+    폰트 크기는 슬라이드마다 절대 달라지지 않는다(통일). 분량 차이는 여백(compact)만 흡수한다.
+    """
     for size in _SIZE_STEPS:
-        c = _min_compact(blocks, col_w, text_h, size)
-        if c is not None:
-            return size, c
-    return _SIZE_STEPS[-1], 1.0
+        compacts, ok = [], True
+        for (left, right), body_h in zip(projects_blocks, body_hs):
+            c = _min_compact(left, right, left_w, right_w, body_h, size)
+            if c is None:
+                ok = False
+                break
+            compacts.append(c)
+        if ok:
+            return size, compacts
+    return _SIZE_STEPS[-1], [1.0] * len(projects_blocks)
 
 
 # ---------- 카드 프레임 (배경 + 흰 카드) ----------
@@ -528,15 +512,9 @@ def _draw_header(slide, part, num, lang, x0, y0, x1, hl):
 
 # ---------- 슬라이드 조립 ----------
 
-# 다이어그램 하단 스트립: 이미지 장수에 따른 높이 (본문 텍스트 영역에서 미리 빼둔다)
-def _img_strip_h(n):
-    if n <= 0:
-        return 0.0
-    return 1.5 if n == 1 else (1.65 if n == 2 else 1.8)
-
-
-def _draw_image_strip(slide, files, root_dir, lang, x0, w_total, y_top, band_h):
-    """다이어그램들을 하단 풀폭 스트립에 가로로 나란히 배치 (비율 유지·중앙 정렬·테두리)."""
+def _draw_images(slide, files, root_dir, lang, x, w, y_top, total_h):
+    """다이어그램들을 우측 컬럼(성과) 아래 남는 영역(x, y_top, w, total_h)에 세로로 배치.
+    각 이미지는 슬롯 안에서 비율 유지·중앙 정렬·얇은 테두리."""
     is_ko = lang != "en"
     warnings, valid = [], []
     for fn in files:
@@ -548,54 +526,58 @@ def _draw_image_strip(slide, files, root_dir, lang, x0, w_total, y_top, band_h):
     if not valid:
         return warnings
 
-    _label(slide, x0, y_top, w_total, 0.16, "다이어그램" if is_ko else "Diagram", 8.5, MUT, True)
+    _label(slide, x, y_top, w, 0.16, "다이어그램" if is_ko else "Diagram", 8.5, MUT, True)
     y_top += 0.2
-    band_h -= 0.2
-    if band_h < 0.3:
+    total_h -= 0.2
+    if total_h < 0.3:
         return warnings
 
     n = len(valid)
-    hgap = 0.16
-    slot_w = (w_total - hgap * (n - 1)) / n
-    for i, fp in enumerate(valid):
-        sx = x0 + i * (slot_w + hgap)
+    vgap = 0.12
+    slot_h = (total_h - vgap * (n - 1)) / n
+    cy = y_top
+    for fp in valid:
         try:
             pic = slide.shapes.add_picture(fp, Emu(0), Emu(0))
         except Exception:
             warnings.append(f"이미지 삽입 실패: {os.path.basename(fp)}")
+            cy += slot_h + vgap
             continue
         iw, ih = pic.width, pic.height
-        scale = min(Inches(slot_w) / iw, Inches(band_h) / ih)
+        scale = min(Inches(w) / iw, Inches(slot_h) / ih)
         nw, nh = int(iw * scale), int(ih * scale)
         pic.width, pic.height = nw, nh
-        pic.left = int(Inches(sx) + (Inches(slot_w) - nw) / 2)
-        pic.top = int(Inches(y_top) + (Inches(band_h) - nh) / 2)
+        pic.left = int(Inches(x) + (Inches(w) - nw) / 2)
+        pic.top = int(Inches(cy) + (Inches(slot_h) - nh) / 2)
         pic.line.color.rgb = LINE
         pic.line.width = Pt(0.75)
         pic.shadow.inherit = False
+        cy += slot_h + vgap
     return warnings
 
 
-def add_project_slide(prs, part, num, lang, size, compact, col_w, gap, files, root_dir):
+def add_project_slide(prs, part, num, lang, size, compact, left_w, right_w, gap, files, root_dir):
     slide = _blank_slide(prs)
     x0, y0, x1, y1 = _card_frame(slide)
     hl = _header_layout(part, lang, x1 - x0)
     _draw_header(slide, part, num, lang, x0, y0, x1, hl)
     body_top = y0 + hl["body_top"]
 
-    strip_h = _img_strip_h(len(files))
-    text_bottom = y1 - (strip_h + 0.14 if strip_h else 0.0)
+    left_blocks, right_blocks = _project_blocks(part, lang)
+    right_x = x0 + left_w + gap
+    _render_column(slide, left_blocks, x0, body_top, left_w, size, compact)
+    right_bottom = _render_column(slide, right_blocks, right_x, body_top, right_w, size, compact)
 
-    blocks = _project_block_list(part, lang)
-    c1, c2 = _split_columns(blocks, col_w, size, compact)
-    _render_column(slide, c1, x0, body_top, col_w, size, compact)
-    _render_column(slide, c2, x0 + col_w + gap, body_top, col_w, size, compact)
-
-    # 다이어그램: 하단 풀폭 스트립 (텍스트 영역과 이미 분리해 두어 겹치지 않음)
+    # 다이어그램: 주요 성과(오른쪽 컬럼) 아래 남는 여백에 배치.
+    # 왼쪽 텍스트 컬럼과 x 가 달라 겹치지 않는다.
     warnings = []
-    if files and strip_h:
-        warnings += _draw_image_strip(slide, files, root_dir, lang, x0, x1 - x0,
-                                      text_bottom + 0.14, strip_h)
+    if files:
+        img_top = max(right_bottom, body_top) + 0.16
+        img_h = y1 - img_top
+        if img_h >= 0.6:
+            warnings += _draw_images(slide, files, root_dir, lang, right_x, right_w, img_top, img_h)
+        else:
+            warnings.append(f"{part.get('id')}: 다이어그램 공간 부족(성과 항목이 많음)")
     return warnings
 
 
@@ -624,26 +606,28 @@ def portfolio_pptx_bytes(identity: dict, target: str, parts: list, lang: str, ro
 
     projects = [p for p in parts if p.get("kind") == "project"]
 
-    # 콘텐츠 영역: 균등 2컬럼 (본문 블록을 두 컬럼에 균형 분할)
+    # 콘텐츠 영역: 좌(문제+역할) : 우(성과) 고정 2컬럼. 폭은 모든 슬라이드 동일.
     content_w = SLIDE_W_IN - CARD_MARGIN * 2 - CARD_PAD_X * 2
-    col_w = round((content_w - COL_GAP) / 2, 3)
+    left_w = round(content_w * LEFT_RATIO, 3)
+    right_w = round(content_w - left_w - COL_GAP, 3)
     y1 = SLIDE_H_IN - CARD_MARGIN - CARD_PAD_BOTTOM
 
-    dmap = diagram_map(root_dir)
-
-    # 프로젝트별로 최적 폰트 크기·압축을 계산(이미지 있으면 하단 스트립만큼 텍스트 영역을 뺀다)
-    # 후 렌더. 슬라이드마다 콘텐츠 밀도에 맞는 크기를 써서 가벼운 프로젝트는 크게 보인다.
-    warnings = []
-    for num, part in enumerate(projects, start=1):
-        files = dmap.get(part.get("id"), [])
-        blocks = _project_block_list(part, lang)
+    # 1) 덱 전체에 쓸 '단일' 폰트 크기를 먼저 결정 (통일). 두 컬럼 모두 본문 전체 높이를 쓰고,
+    #    이미지는 성과(우측) 아래 남는 여백을 채우므로 폰트 계산에 영향을 주지 않는다.
+    projects_blocks, body_hs = [], []
+    for part in projects:
+        projects_blocks.append(_project_blocks(part, lang))
         body_top = _header_layout(part, lang, content_w)["body_top"]
-        body_h = y1 - (CARD_MARGIN + CARD_PAD_TOP + body_top)
-        strip_h = _img_strip_h(len(files))
-        text_h = body_h - (strip_h + 0.14 if strip_h else 0.0)
-        size, compact = _pick_project_layout(blocks, col_w, text_h)
-        warnings += add_project_slide(prs, part, num, lang, size, compact,
-                                      col_w, COL_GAP, files, root_dir)
+        body_hs.append(y1 - (CARD_MARGIN + CARD_PAD_TOP + body_top))
+    deck_size, compacts = _pick_deck_layout(projects_blocks, left_w, right_w, body_hs)
+
+    # 2) 통일 폰트로 전체 슬라이드 렌더 (여백만 프로젝트별로 다름)
+    dmap = diagram_map(root_dir)
+    warnings = []
+    for num, (part, compact) in enumerate(zip(projects, compacts), start=1):
+        files = dmap.get(part.get("id"), [])
+        warnings += add_project_slide(prs, part, num, lang, deck_size, compact,
+                                      left_w, right_w, COL_GAP, files, root_dir)
 
     bio = io.BytesIO()
     prs.save(bio)
