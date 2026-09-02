@@ -61,16 +61,16 @@ facts:
 variants:
   - angle: modeling-foundation
     uses: [f2, f1]
-    ko: "LLM 출력 품질을 CMD_KW·COMPLETE·INPUT_Q·SCOPE·CTX_DEP 5개 축으로 분해하고 400건 평가셋으로 축별 채점 기준을 설계"
-    en: "Decomposed LLM output quality into 5 axes (CMD_KW, COMPLETE, INPUT_Q, SCOPE, CTX_DEP) and designed per-axis scoring on a 400-item evaluation set"
+    ko: "LLM·STT 출력 품질을 명령 인식·완결성·입력 품질·범위·문맥 의존성 5개 축으로 분해하고, 400건 gold-standard 평가셋으로 축별 채점 기준을 설계한 평가 프레임워크를 구축"
+    en: "Built a 5-axis evaluation framework for LLM/STT output quality — command recognition, completeness, input quality, scope, and context dependency — with per-axis scoring on a 400-item gold-standard set"
   - angle: modeling-foundation
     uses: [f13]
     ko: "단일 정답/오답 스코어를 넘어, 명령의 어떤 요소에서 시스템이 취약한지 축별로 진단하도록 평가를 5개 축으로 분해"
     en: "Went beyond pass/fail scoring by decomposing evaluation into 5 axes that diagnose which command elements the system handles poorly"
   - angle: modeling-foundation
     uses: [f4, f5]
-    ko: "합성·규칙 기반 생성 후 전수 검수로 gold standard 평가셋을 구축하고, 임상 호출 빈도·축별 민감도/특이도를 반영한 (커맨드 × 평가축) matrix로 비균일 샘플링"
-    en: "Built a gold-standard evaluation set via synthetic and rule-based generation with full manual review, sampled non-uniformly by a (command × axis) matrix reflecting clinical call frequency and per-axis sensitivity/specificity"
+    ko: "합성·규칙 기반 생성 후 전수 수동 검수로 gold-standard 평가셋을 구축하고, 임상 호출 빈도와 축별 중요도를 반영해 비균일 샘플링"
+    en: "Built a gold-standard evaluation set via synthetic and rule-based generation with full manual review, sampled non-uniformly to reflect clinical call frequency and per-axis importance"
   - angle: ownership-e2e
     uses: [f3, f4]
     ko: "평가 축 분해·채점 기준 정의·gold standard 평가셋 구축까지 평가 프레임워크 전체를 설계"

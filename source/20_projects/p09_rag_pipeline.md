@@ -53,16 +53,16 @@ facts:
 variants:
   - angle: engineering-craft
     uses: [f2]
-    ko: "HWP·Word·PDF·Excel 등 다양한 형식의 추출·파싱·청킹·임베딩부터 BM25 하이브리드 랭킹, 요약·답변 생성까지 이어지는 RAG 파이프라인을 LangChain·직접 구현으로 구축"
-    en: "Built the RAG pipeline — extraction/parsing/chunking/embedding across HWP, Word, PDF, Excel, a BM25 hybrid ranking, and answer summarization — with LangChain plus custom implementation"
+    ko: "다형식 문서(HWP·Word·PDF·Excel)의 파싱·청킹·임베딩부터 BM25 하이브리드 검색, 답변 생성까지 RAG 파이프라인 전체를 LangChain과 직접 구현으로 구축"
+    en: "Built the full RAG pipeline — parsing, chunking, and embedding of multi-format docs (HWP, Word, PDF, Excel), BM25 hybrid retrieval, and answer generation — with LangChain and custom code"
   - angle: performance-optimization
     uses: [f4]
     ko: "파일 검색 성능 96%(목표 90%)·청크 검색 성능 88%(목표 85%)를 달성"
     en: "Achieved 96% file-retrieval performance (target 90%) and 88% chunk-retrieval performance (target 85%)"
   - angle: stakeholder-alignment
     uses: [f5, f3]
-    ko: "고객사와 긴밀히 소통하며 로그 분석·피드백을 반영해 개선하고, 준법률 도메인의 환각을 억제하기 위해 출처 명시·검증 단계를 추가"
-    en: "Worked closely with the client — analyzing logs and folding in feedback — and suppressed hallucination in the quasi-legal domain with source citation and a verification step"
+    ko: "준법률 도메인의 환각을 억제하기 위해 출처 명시·검증 단계를 추가하고, 고객사 로그 분석·피드백으로 반복 개선"
+    en: "Suppressed hallucination in a quasi-legal domain by adding source citation and a verification step, iterating on client log analysis and feedback"
 
 short:
   ko: >

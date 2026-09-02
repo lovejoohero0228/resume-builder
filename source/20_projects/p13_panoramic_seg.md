@@ -61,8 +61,8 @@ variants:
     en: "Led dental-panoramic model development end to end — from product planning, target-setting, and dataset construction through productization"
   - angle: modeling-foundation
     uses: [f1]
-    ko: "치과 파노라마에서 해부 구조·보철물 분할과 병변 탐지를 아우르는 10여 개 모델을 설계·학습"
-    en: "Designed and trained ~10 models spanning anatomical-structure and prosthesis segmentation and lesion detection on dental panoramic images"
+    ko: "치과 파노라마 영상에서 치아·상악동·보철물 등 해부 구조 분할과 병변 검출을 아우르는 10여 개 모델을 설계·학습"
+    en: "Designed and trained ~10 models on dental panoramic radiographs — segmentation of anatomy and prosthesis (tooth, sinus, prosthesis) plus lesion detection"
   - angle: modeling-foundation
     uses: [f2, f4]
     ko: "Mask2Former·MaskDINO(트랜스포머)와 U-Net(전통) 모델을 다수의 ablation 실험으로 비교해 최적 구성을 도출"

@@ -50,12 +50,12 @@ facts:
 variants:
   - angle: engineering-craft
     uses: [f1, f4]
-    ko: "중간 결과를 SQL로 생성하는 파인튜닝 모델을 개발하고, 온디바이스 제약에 맞춰 최적 sLLM·서빙 엔진을 선정·최적화"
-    en: "Built the fine-tuned model that generates SQL from intermediate results, and selected and optimized the best sLLM and serving engine under on-device constraints"
+    ko: "DARVIS의 핵심 SQL 생성 파인튜닝 모델을 개발하고, 온디바이스·보안 제약에 맞춰 sLLM과 서빙 엔진을 선정·최적화"
+    en: "Developed DARVIS's core SQL-generation fine-tuned model and selected/optimized the sLLM and serving engine for on-device, no-cloud constraints"
   - angle: performance-optimization
     uses: [f3, f4]
     ko: "sLLM 경량화·양자화와 서빙 엔진 최적화로 여러 데이터베이스를 동시 조회해 3초 이내로 결과를 요약하는 성능을 확보"
-    en: "Through sLLM lightweighting/quantization and serving-engine optimization, achieved querying multiple databases simultaneously with result summaries within 3 seconds"
+    en: "Through sLLM quantization/lightweighting and serving-engine optimization, reached sub-3-second summaries while querying multiple databases at once"
   - angle: research-depth
     uses: [f2, f5]
     ko: "스키마 injection·few-shot·chain-of-thought·파인튜닝 등 최신 기법을 실험·비교하고, LoRA 경량화·양자화 선행연구를 재현·적용"

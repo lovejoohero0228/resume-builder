@@ -50,8 +50,8 @@ variants:
     en: "As an AI Voucher project, solo-designed and built a listing recommender for a used industrial-equipment marketplace and completed PoC and handoff"
   - angle: engineering-craft
     uses: [f2]
-    ko: "상품정보·시리얼넘버·제조사·제조국가·가격대·연식 등을 기반으로 콘텐츠 기반 필터링과 협업 필터링을 결합한 하이브리드 추천기를 구현"
-    en: "Built a hybrid recommender combining content-based and collaborative filtering over item info — serial number, manufacturer, country, price range, model year"
+    ko: "장비 메타데이터(제조사·제조국·가격대·연식 등)를 기반으로 콘텐츠 기반 필터링과 협업 필터링을 결합한 하이브리드 추천기를 구현"
+    en: "Built a hybrid recommender combining content-based and collaborative filtering over equipment metadata — manufacturer, country, price range, and model year"
   - angle: research-depth
     uses: [f3]
     ko: "로그 기반 사용 분포 분석과 여러 통계 가정 수립으로 추천 방식을 설계"
