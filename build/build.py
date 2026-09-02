@@ -609,11 +609,16 @@ def catalog() -> dict:
     for pid, proj in sorted(projects.items()):
         m = proj["meta"]
         vangles = sorted({(v or {}).get("angle") for v in (m.get("variants") or []) if v.get("angle")})
+        vlist = [{"idx": i, "angle": (v or {}).get("angle", ""),
+                  "ko": ((v or {}).get("ko") or "").strip(),
+                  "en": ((v or {}).get("en") or "").strip()}
+                 for i, v in enumerate(m.get("variants") or [])]
         plist.append({
             "id": pid,
             "sid": "20_projects/" + pid,          # id 기반 (조립 로직·기존 프로필과 일치)
             "title_ko": m.get("title_ko", pid), "title_en": m.get("title_en", pid),
             "angles": m.get("angles", []) or [], "variant_angles": vangles,
+            "variants": vlist,                    # 관점별 실제 문장 (인라인 편집용)
             "tags": m.get("tags", []) or [], "org": m.get("org", ""),
         })
 

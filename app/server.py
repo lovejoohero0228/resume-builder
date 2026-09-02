@@ -37,6 +37,38 @@ def _safe_path(rel: str):
     return p
 
 
+_VAR_START = re.compile(r"^\s*-\s+angle:")
+
+
+def update_variant(pid: str, idx: int, lang: str, text: str):
+    """프로젝트 .md 의 idx 번째 variant 의 ko/en 값 한 줄만 교체 (주석·형식 보존)."""
+    if lang not in ("ko", "en"):
+        return False, "bad lang"
+    projects = B.load_projects()
+    proj = projects.get(pid)
+    if not proj:
+        return False, "project not found"
+    path = proj["path"]
+    # newline="" 로 원본 줄바꿈(\n/\r\n)을 각 줄에 그대로 보존 (전체 파일 CRLF 변환 방지)
+    with open(path, encoding="utf-8", newline="") as f:
+        lines = f.readlines()
+    starts = [i for i, l in enumerate(lines) if _VAR_START.match(l)]
+    if idx < 0 or idx >= len(starts):
+        return False, "variant idx out of range"
+    start = starts[idx]
+    end = starts[idx + 1] if idx + 1 < len(starts) else len(lines)
+    text = " ".join(str(text).split())          # 개행·중복 공백 제거 (한 문장)
+    for i in range(start, end):
+        m = re.match(r"^(\s*)(ko|en):\s", lines[i])
+        if m and m.group(2) == lang:
+            nl = "\r\n" if lines[i].endswith("\r\n") else "\n"
+            lines[i] = f"{m.group(1)}{lang}: {json.dumps(text, ensure_ascii=False)}{nl}"
+            with open(path, "w", encoding="utf-8", newline="") as f:
+                f.writelines(lines)
+            return True, None
+    return False, f"{lang} line not found in variant {idx}"
+
+
 class Handler(BaseHTTPRequestHandler):
     def _send(self, code, body, ctype="application/json; charset=utf-8"):
         if isinstance(body, (dict, list)):
@@ -123,8 +155,9 @@ class Handler(BaseHTTPRequestHandler):
                 if not p:
                     return self._send(400, {"error": "bad path"})
                 os.makedirs(os.path.dirname(p), exist_ok=True)
-                with open(p, "w", encoding="utf-8") as f:
-                    f.write(d.get("content", ""))
+                content = (d.get("content", "") or "").replace("\r\n", "\n")
+                with open(p, "w", encoding="utf-8", newline="") as f:   # LF 유지 (CRLF 변환 방지)
+                    f.write(content)
                 return self._send(200, {"ok": True})
             if u.path == "/api/assemble":
                 profile = self._read_json()
@@ -160,6 +193,11 @@ class Handler(BaseHTTPRequestHandler):
                     data,
                     "application/vnd.openxmlformats-officedocument.presentationml.presentation",
                     f"portfolio_{lg}.pptx")
+            if u.path == "/api/variant":
+                d = self._read_json()
+                ok, err = update_variant(d.get("id", ""), int(d.get("idx", -1)),
+                                         d.get("lang", ""), d.get("text", ""))
+                return self._send(200 if ok else 400, {"ok": ok} if ok else {"error": err})
             if u.path == "/api/profile":
                 d = self._read_json()
                 name = d.get("name", "")
