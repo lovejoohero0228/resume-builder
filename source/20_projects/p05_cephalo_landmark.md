@@ -1,6 +1,6 @@
 ---
 id: p05
-title_ko: Cephalometric 교정 랜드마크 검출 (42개)
+title_ko: Cephalometric 랜드마크 검출 (42개)
 title_en: Cephalometric Landmark Detection (42 points)
 org: Genoray
 period: 2025-02 ~ 2025-07

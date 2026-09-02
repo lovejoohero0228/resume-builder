@@ -1,6 +1,6 @@
 ---
 id: p01
-title_ko: C-arm 음성 제어 시스템
+title_ko: C-arm AI Voice System
 title_en: C-arm AI Voice System
 org: Genoray
 period: 2026-01 ~ 2026-11
@@ -9,7 +9,7 @@ tags: [Medical-AI, Speech, NLP, On-device]
 angles: [ownership-e2e, performance-optimization, engineering-craft]
 
 card:
-  ko: "손댈 수 없는 수술 환경을 위해, 지연·온디바이스 제약을 뚫고 C-arm 음성 제어를 설계·배포"
+  ko: "손댈 수 없는 수술 환경을 위해, 지연·온디바이스 제약을 뚫고 C-arm AI Voice System을 설계·배포"
   en: "Owned the C-arm AI Voice System under real-time, on-device constraints"
 
 problem:
@@ -25,7 +25,7 @@ problem:
     - Hard Korean / domain-specific medical-term speech recognition
 
 role_groups:
-  - label_ko: "음성 명령을 장비 동작으로 바꾸는 파이프라인을 설계·구현"
+  - label_ko: "Voice-to-Command 파이프라인(음성 → 장비 동작)을 설계·구현"
     label_en: "Designed and built the Voice-to-Command pipeline (voice → device motion)"
     uses: [f3, f5, f17]
   - label_ko: "STT 응답 지연·오인식을 최적화"
@@ -67,7 +67,7 @@ facts:
 variants:
   - angle: ownership-e2e
     uses: [f3, f2]
-    ko: "한국어 음성 명령을 실제 C-arm 장비의 물리적 동작으로 바꾸는 음성 → NLU → 모터 제어 파이프라인을 설계부터 디바이스 검증·배포까지 소유, 명령 인식 정확도 96% 달성"
+    ko: "C-arm AI Voice System을 설계부터 디바이스 검증·배포까지 소유 — 한국어 Voice-to-Command(음성 → NLU → 모터 제어) 파이프라인으로 실제 C-arm 장비를 구동, 명령 인식 정확도 96% 달성"
     en: "Owned the C-arm AI Voice System end to end — a Korean Voice-to-Command (voice → NLU → motor-control) pipeline driving a C-arm surgical device — from design through on-device validation and deployment, reaching 96% command accuracy"
   - angle: ownership-e2e
     uses: [f12, f13]
@@ -100,8 +100,8 @@ variants:
 
 short:
   ko: >
-    수술 중 멸균 상태에서 장비를 조작할 수 없는 문제를 해결 — 한국어 음성 명령을 C-arm 수술
-    장비의 물리적 동작으로 바꾸는 음성 → NLU → 모터 제어 시스템을 설계·구현·배포. STT 응답 지연을
+    수술 중 멸균 상태에서 장비를 조작할 수 없는 문제를 해결 — 한국어 Voice-to-Command(음성 → NLU →
+    모터 제어) 파이프라인의 C-arm AI Voice System을 설계·구현·배포. STT 응답 지연을
     4초 초과에서 0.4초 미만으로 단축하고, 유사도 기반 fallback 매칭으로 오인식에 대응 — 전체 콜
     정확도 86% → 94%·명령 인식 정확도 96% 달성. 물리 디바이스 검증 후 규제 인증을 진행 중.
   en: >

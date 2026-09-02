@@ -1,6 +1,6 @@
 ---
 id: p08
-title_ko: Text-to-SQL 모델 (DARVIS)
+title_ko: Text2SQL 모델 (DARVIS)
 title_en: Text2SQL Model (DARVIS)
 org: Dfinite
 period: 2024-07 ~ 2025-01
@@ -9,7 +9,7 @@ tags: [Enterprise-AI, LLM, Text2SQL]
 angles: [engineering-craft, performance-optimization, research-depth]
 
 card:
-  ko: "온디바이스·보안 제약에서 DARVIS의 Text-to-SQL 모델을 파인튜닝·서빙 최적화"
+  ko: "온디바이스·보안 제약에서 DARVIS의 Text2SQL 모델을 파인튜닝·서빙 최적화"
   en: "Fine-tuned DARVIS Text2SQL under on-device, no-cloud constraints"
 
 problem:
@@ -39,9 +39,9 @@ role_groups:
     uses: [f6]
 
 facts:
-  f1: {kind: artifact, value_ko: "DARVIS Text-to-SQL에서 중간 결과를 SQL문으로 생성하는 모델의 파인튜닝을 담당하고, 평가·학습 데이터를 직접 구축", value_en: "owned fine-tuning of the model that generates SQL from intermediate results in DARVIS's Text2SQL, and built the evaluation/training data", disclosure: public, confidence: measured}
+  f1: {kind: artifact, value_ko: "DARVIS Text2SQL에서 중간 결과를 SQL문으로 생성하는 모델의 파인튜닝을 담당하고, 평가·학습 데이터를 직접 구축", value_en: "owned fine-tuning of the model that generates SQL from intermediate results in DARVIS's Text2SQL, and built the evaluation/training data", disclosure: public, confidence: measured}
   f2: {kind: decision, value_ko: "스키마 injection·few-shot·chain-of-thought 프롬프팅·파인튜닝 등 최신 기법을 실험·비교", value_en: "experimented with and compared a range of recent techniques — schema injection, few-shot, chain-of-thought prompting, and fine-tuning", disclosure: public, confidence: measured}
-  f3: {kind: metric, value_ko: "DARVIS Text-to-SQL은 여러 데이터베이스를 동시에 조회해 3초 이내로 결과를 요약 (제품 공개 정보)", value_en: "DARVIS Text2SQL queries multiple databases simultaneously and summarizes results within 3 seconds (public product info)", disclosure: public, confidence: measured}
+  f3: {kind: metric, value_ko: "DARVIS Text2SQL은 여러 데이터베이스를 동시에 조회해 3초 이내로 결과를 요약 (제품 공개 정보)", value_en: "DARVIS Text2SQL queries multiple databases simultaneously and summarizes results within 3 seconds (public product info)", disclosure: public, confidence: measured}
   f4: {kind: decision, value_ko: "온디바이스·성능 제약 아래 품질·성능 트레이드오프를 따져 최적 sLLM과 가장 빠른 서빙 엔진을 선정하고 서빙 최적화", value_en: "under on-device and performance constraints, selected the best sLLM and fastest serving engine by weighing the quality/performance trade-off, and optimized serving", disclosure: public, confidence: measured}
   f5: {kind: decision, value_ko: "LoRA 등 경량화 파인튜닝·양자화 기법을 선행연구 기반으로 연구·적용", value_en: "researched and applied lightweight fine-tuning (e.g., LoRA) and quantization based on prior work", disclosure: public, confidence: measured}
   f6: {kind: scope, value_ko: "자동차부품 제조사 첫 PoC에서 MES·ERP·SAP·자체 DB에 산재한 데이터를 통합·연동하고, 약 6개월간 핵심 기능을 개발·배포", value_en: "with an auto-parts manufacturer as the first PoC, integrated data scattered across MES, ERP, SAP, and in-house DBs, developing and deploying core features over ~6 months", disclosure: public, confidence: measured}
@@ -63,7 +63,7 @@ variants:
 
 short:
   ko: >
-    초기 5인 AI팀 일원으로 스타트업 첫 제품 DARVIS의 Text-to-SQL 핵심 모델을 담당. 스키마
+    초기 5인 AI팀 일원으로 스타트업 첫 제품 DARVIS의 Text2SQL 핵심 모델을 담당. 스키마
     injection·few-shot·chain-of-thought·파인튜닝 등 최신 기법을 실험하고, 온디바이스 제약 아래 최적
     sLLM·서빙 엔진 선정과 LoRA 경량화·양자화로 성능을 확보. 자동차부품 제조사 첫 PoC에서
     MES·ERP·SAP·자체 DB를 통합해 약 6개월간 개발·배포. 제품은 여러 DB를 동시 조회해 3초 이내로

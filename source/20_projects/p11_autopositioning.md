@@ -1,6 +1,6 @@
 ---
 id: p11
-title_ko: C-arm 오토포지셔닝 리서치
+title_ko: C-arm Auto Positioning 리서치
 title_en: C-arm Auto Positioning Research
 org: Genoray
 period: 2026-06 ~ 진행중
@@ -13,7 +13,7 @@ card:
   en: "Researching C-arm Auto Positioning with synthetic data amid data scarcity (ongoing)"
 
 problem:
-  goal_ko: "scout 영상에서 타겟 구조물을 정답 포지션으로 정렬시킬 각 축별 이동·회전 delta를 추론하는 오토포지셔닝 모델 연구."
+  goal_ko: "scout 영상에서 타겟 구조물을 정답 포지션으로 정렬시킬 각 축별 이동·회전 delta를 추론하는 Auto Positioning 모델 연구."
   goal_en: "Research an Auto Positioning model that, from a scout image, infers the per-axis translation/rotation deltas needed to align the target structure into the correct pose."
   hurdle_ko: |
     - 실제 방사선 촬영 임상 데이터 확보가 협의 대기 중 (데이터 부족)
@@ -23,7 +23,7 @@ problem:
     - Still at the research / modeling-planning stage, so performance validation isn't yet possible
 
 role_groups:
-  - label_ko: "scout 영상을 기반으로 축별 delta를 추론하는 오토포지셔닝 모델을 연구"
+  - label_ko: "scout 영상을 기반으로 축별 delta를 추론하는 Auto Positioning 모델을 연구"
     label_en: "Researched the scout-image, per-axis-delta Auto Positioning model"
     uses: [f1]
   - label_ko: "실데이터 확보 지연을 CT 기반 DeepDRR 선행연구 재현으로 보완"
@@ -42,7 +42,7 @@ facts:
 variants:
   - angle: research-depth
     uses: [f1, f2]
-    ko: "scout 영상에서 각 축별 이동·회전 delta를 추론하는 오토포지셔닝 모델을 연구하고, 실데이터 확보 지연을 CT 기반 DeepDRR 선행연구 재현으로 보완"
+    ko: "scout 영상에서 각 축별 이동·회전 delta를 추론하는 Auto Positioning 모델을 연구하고, 실데이터 확보 지연을 CT 기반 DeepDRR 선행연구 재현으로 보완"
     en: "Researched an Auto Positioning model that infers per-axis translation/rotation deltas from a scout image, offsetting delayed real data by reproducing CT-based DeepDRR prior work"
   - angle: engineering-craft
     uses: [f2]
@@ -56,7 +56,7 @@ variants:
 short:
   ko: >
     scout 영상에서 타겟 구조물을 정답 포지션으로 정렬시킬 각 축별 이동·회전 delta를 추론하는
-    오토포지셔닝 모델을 리서치. 실 임상 데이터 획득 지연을 CT 기반 DeepDRR 선행연구 재현으로 보완하고,
+    Auto Positioning 모델을 리서치. 실 임상 데이터 획득 지연을 CT 기반 DeepDRR 선행연구 재현으로 보완하고,
     합성 데이터 보완과 팬텀 실촬영, 두 방향의 데이터 전략을 병렬로 기획 중. (리서치·모델링 기획 단계,
     진행중)
   en: >

@@ -1,6 +1,6 @@
 ---
 id: p13
-title_ko: Panoramic 구조물·병변 분할·검출 (10여 개 모델)
+title_ko: Dental Panoramic Radiograph 분할·검출 (10여 개 모델)
 title_en: Dental Panoramic Radiograph Segmentation & Detection
 org: Genoray
 period: 2025-08 ~ 2026-10
@@ -42,7 +42,7 @@ role_groups:
     uses: [f8]
 
 facts:
-  f1: {kind: scope, value_ko: "치과 파노라마에서 치아·하치조신경관·상악동·보철물(크라운·임플란트·인레이·브릿지)·근관치료 분할과 우식증·치주염·매복치·잔존치근 탐지 등 10여 개 모델을 개발", value_en: "developed ~10 models on dental panoramic radiographs — segmentation of Tooth, sinus, IAC, Alveolar crest, CEJ, Prosthesis, and TMJ, plus detection of Caries, periodontitis, Impaction, Radiolucency, and Lesion", disclosure: public, confidence: measured}
+  f1: {kind: scope, value_ko: "치과 파노라마에서 치아(Tooth)·상악동(sinus)·하치조신경관(IAC)·치조정(Alveolar crest)·CEJ·보철물(Prosthesis)·악관절(TMJ) 분할과 우식증(Caries)·치주염(periodontitis)·매복치(Impaction)·방사선투과상(Radiolucency)·병변(Lesion) 탐지 등 10여 개 모델을 개발", value_en: "developed ~10 models on dental panoramic radiographs — segmentation of Tooth, sinus, IAC, Alveolar crest, CEJ, Prosthesis, and TMJ, plus detection of Caries, periodontitis, Impaction, Radiolucency, and Lesion", disclosure: public, confidence: measured}
   f2: {kind: artifact, value_ko: "분할은 Mask2Former·MaskDINO(트랜스포머)와 U-Net(전통)으로, 검출은 YOLO·Detectron2·MMDetection 등 다양한 프레임워크로 모델을 개발", value_en: "built segmentation models on transformer backbones (Mask2Former, MaskDINO) and a traditional U-Net, and detection models across frameworks such as YOLO, Detectron2, and MMDetection", disclosure: public, confidence: measured}
   f3: {kind: decision, value_ko: "병변을 마스크로 정의하는 것의 모순을 근거로 기획팀을 설득해, 병변 평가를 detection 레벨로 전환", value_en: "persuaded the planning team, with evidence, to evaluate lesions at the detection level instead of forcing mask-based ground truth", disclosure: public, confidence: measured}
   f4: {kind: decision, value_ko: "모델 구분과 task 통합을 다수의 ablation 실험으로 비교해 최적 구성을 도출", value_en: "compared many model splits and task groupings through numerous ablation experiments to arrive at the optimal configuration", disclosure: public, confidence: measured}
@@ -74,7 +74,7 @@ variants:
 
 short:
   ko: >
-    치과 파노라마에서 치아·신경관·상악동·보철물 분할과 우식증·치주염·매복치·잔존치근 탐지 등
+    치과 파노라마에서 치아·상악동·IAC·치조정·CEJ·보철물·TMJ 분할과 우식증·치주염·매복치·방사선투과상·병변 탐지 등
     10여 개 모델을 scratch에서 end-to-end로 리드. 분할은 Mask2Former·MaskDINO(트랜스포머)와
     U-Net(전통)을 다수의 ablation으로 비교하고, 라벨링 툴용 SAM을 파인튜닝해 라벨링 비용을 절감.
     병변은 마스크 정답의 모순을 근거로 기획팀을 설득해 detection 평가로 전환. 벤치마킹 대상
