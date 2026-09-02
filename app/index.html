@@ -554,13 +554,14 @@ function pfInit(root){
 // 프로젝트별 다이어그램 매핑 — assets/diagrams/ 안의 실제 파일명. 프로젝트당 1개 이상 지원.
 // 파일이 있으면 pfInit이 로드해 placeholder 를 교체, 없으면 placeholder 유지.
 const DIAGRAMS={
-  p01:['ai voice system architecture.png'],
-  p05:['Cephalometric Landmark Detection.png'],
-  p08:['Text2SQL Product UI.png','Text2SQL System Architecture.png','DARVIS DB통합.png'],
-  p09:['RAG architecture.png'],
+  p01:['AI Voice System Architecture.png'],
+  p02:['LLM STT Evaluation Design.png'],
+  p05:['Cephalometric Landmark Detection Overview.png'],
+  p08:['DARVIS Product Overview.png','DARVIS Text2SQL Product UI.png','Text2SQL System Architecture.png'],
+  p09:['DARVIS Product Overview.png','RAG System  Architecture.png','DARVIS RAG Product UI.png'],
   p11:['Auto positioning.jpg'],
-  p12:['panorama labeling tool.png'],
-  p13:['Dental Panoramic Radiograph Segmentation.png']
+  p12:['Training Data Construction Project-Labeling Tool.png'],
+  p13:['Dental Panoramic Radiograph Segmentation Overview.png']
 };
 // 파일명 → 사람이 읽을 캡션 (확장자 제거·언더스코어 정리)
 function diagCap(fn){

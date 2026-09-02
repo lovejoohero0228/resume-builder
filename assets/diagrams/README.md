@@ -10,13 +10,14 @@
 
 ```js
 const DIAGRAMS={
-  p01:['ai voice system architecture.png'],
-  p05:['Cephalometric Landmark Detection.png'],
-  p08:['Text2SQL Product UI.png','Text2SQL System Architecture.png','DARVIS DB통합.png'],   // 프로젝트당 여러 장 가능
-  p09:['RAG architecture.png'],
+  p01:['AI Voice System Architecture.png'],
+  p02:['LLM STT Evaluation Design.png'],
+  p05:['Cephalometric Landmark Detection Overview.png'],
+  p08:['DARVIS Product Overview.png','DARVIS Text2SQL Product UI.png','Text2SQL System Architecture.png'],   // 프로젝트당 여러 장 가능
+  p09:['DARVIS Product Overview.png','RAG System  Architecture.png','DARVIS RAG Product UI.png'],
   p11:['Auto positioning.jpg'],
-  p12:['panorama labeling tool.png'],
-  p13:['Dental Panoramic Radiograph Segmentation.png']
+  p12:['Training Data Construction Project-Labeling Tool.png'],
+  p13:['Dental Panoramic Radiograph Segmentation Overview.png']
 };
 ```
 
@@ -24,16 +25,14 @@ const DIAGRAMS={
 
 | 프로젝트 | 파일 |
 |---|---|
-| p01 · C-arm 음성 제어 | `ai voice system architecture.png` |
-| p05 · Cephalo 랜드마크 | `Cephalometric Landmark Detection.png` |
-| p08 · Text-to-SQL (DARVIS) | `Text2SQL Product UI.png`, `Text2SQL System Architecture.png`, `DARVIS DB통합.png` |
-| p09 · RAG 챗봇 | `RAG architecture.png` |
+| p01 · C-arm 음성 제어 | `AI Voice System Architecture.png` |
+| p02 · LLM·STT 평가 | `LLM STT Evaluation Design.png` |
+| p05 · Cephalo 랜드마크 | `Cephalometric Landmark Detection Overview.png` |
+| p08 · Text-to-SQL (DARVIS) | `DARVIS Product Overview.png`, `DARVIS Text2SQL Product UI.png`, `Text2SQL System Architecture.png` |
+| p09 · RAG 챗봇 | `DARVIS Product Overview.png`, `RAG System  Architecture.png`, `DARVIS RAG Product UI.png` |
 | p11 · 오토포지셔닝 | `Auto positioning.jpg` |
-| p12 · 어노테이션 툴 | `panorama labeling tool.png` |
-| p13 · Panoramic 분할 | `Dental Panoramic Radiograph Segmentation.png` |
-
-> `DARVIS RAG Product UI.png` 는 아직 어느 프로젝트에도 매핑돼 있지 않습니다 (p08/p09 중 어디에 붙일지
-> 애매해 자동으로 넣지 않았습니다) — 필요하면 위 표와 `DIAGRAMS` 상수에 직접 추가해주세요.
+| p12 · 어노테이션 툴 | `Training Data Construction Project-Labeling Tool.png` |
+| p13 · Panoramic 분할 | `Dental Panoramic Radiograph Segmentation Overview.png` |
 
 ## 이미지 추가 / 교체
 
