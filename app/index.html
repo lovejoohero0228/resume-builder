@@ -82,6 +82,9 @@
   .sel-h::before,.pv-h::before{content:'';width:3px;height:13px;border-radius:2px;background:var(--acc);flex:0 0 auto}
   .sel-h:first-child,.pv-h:first-child{margin-top:6px}
   .selgrid{display:flex;flex-wrap:wrap;gap:6px}
+  .selbulk{display:flex;gap:6px;margin:2px 0 4px}
+  .bulkbtn{border:1px solid var(--line);background:var(--panel);color:var(--mut);border-radius:7px;cursor:pointer;font-size:11.5px;font-weight:700;line-height:1;padding:5px 10px;transition:.12s}
+  .bulkbtn:hover{border-color:var(--acc);color:var(--fg)}
   .draglist{display:flex;flex-direction:column;gap:6px;min-height:34px;border-radius:10px}
   .draglist.dragover{outline:1.5px dashed var(--acc);outline-offset:3px}
   .draglist.empty{border:1px dashed var(--line);align-items:center;justify-content:center}
@@ -178,12 +181,14 @@
         <div class="asm-select">
           <div class="pane-cap">✓ 담을 내용 선택</div>
           <div id="sub-resume-sel">
+            <div class="selbulk"><button type="button" class="bulkbtn" data-bulk="resume:1">모두 선택</button><button type="button" class="bulkbtn" data-bulk="resume:0">모두 해제</button></div>
             <div class="sel-h">섹션</div><div id="resSecSel" class="selgrid"></div>
             <div class="sel-h">경력</div><div id="resExpSel" class="selgrid"></div>
             <div class="sel-h">프로젝트 <span class="capnote">체크 = 포함 · 관점 칩 <b>복수 선택</b></span></div>
             <div id="resProjSel"></div>
           </div>
           <div id="sub-portfolio-sel" style="display:none">
+            <div class="selbulk"><button type="button" class="bulkbtn" data-bulk="portfolio:1">모두 선택</button><button type="button" class="bulkbtn" data-bulk="portfolio:0">모두 해제</button></div>
             <div class="sel-h">섹션</div><div id="portSecSel" class="selgrid"></div>
             <div class="sel-h">프로젝트 <span class="capnote">체크 = 포함 · 강조 관점 칩</span></div>
             <div id="portProjSel"></div>
@@ -813,6 +818,30 @@ function renderSelect(mode){
   }
 }
 
+/* ----- 모두 선택 / 모두 해제 ----- */
+function selectAll(mode,on){
+  if(mode==='resume'){
+    const R=state.resume;
+    ['00_identity','01_skills','02_education'].forEach(s=>on?R.plain.add(s):R.plain.delete(s));
+    state.cat.experiences.forEach(e=>on?R.exp.add(e.sid):R.exp.delete(e.sid));
+    state.projOrder.forEach(pid=>{
+      if(on){R.inc.add(pid); const p=pj(pid);
+        if(!(R.angles[pid]&&R.angles[pid].length))R.angles[pid]=p.variant_angles.slice(0,1);}
+      else R.inc.delete(pid);
+    });
+  }else{
+    const P=state.portfolio;
+    ['00_identity','90_appendix'].forEach(s=>on?P.plain.add(s):P.plain.delete(s));
+    P.skillsOn=on;
+    state.projOrder.forEach(pid=>{
+      if(on){P.inc.add(pid); const p=pj(pid);
+        if(!(P.angles[pid]&&P.angles[pid].length))P.angles[pid]=p.variant_angles.slice();}
+      else P.inc.delete(pid);
+    });
+  }
+  renderMode(mode);
+}
+
 /* ----- 블록 라벨/포함 판정 ----- */
 function blockInfo(mode,tok){
   if(mode==='resume'){
@@ -997,6 +1026,7 @@ $$('.subtabs button').forEach(b=>b.onclick=()=>{state.sub=b.dataset.sub;
   const r=state.sub==='resume';
   $('#sub-resume-sel').style.display=r?'':'none'; $('#sub-portfolio-sel').style.display=r?'none':'';
   $('#sub-resume-pv').style.display=r?'':'none'; $('#sub-portfolio-pv').style.display=r?'none':'';});
+$$('.bulkbtn').forEach(b=>b.onclick=()=>{const[m,v]=b.dataset.bulk.split(':');selectAll(m,v==='1');});
 
 function currentProfile(){
   const R=state.resume,P=state.portfolio;
