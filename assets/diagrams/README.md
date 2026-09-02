@@ -13,6 +13,7 @@ const DIAGRAMS={
   p01:['AI Voice System Architecture.png'],
   p02:['LLM STT Evaluation Design.png'],
   p05:['Cephalometric Landmark Detection Overview.png'],
+  p06:['Regulatory Technical Documentation (MFDS).png'],
   p08:['DARVIS Product Overview.png','DARVIS Text2SQL Product UI.png','Text2SQL System Architecture.png'],   // 프로젝트당 여러 장 가능
   p09:['DARVIS Product Overview.png','RAG System  Architecture.png','DARVIS RAG Product UI.png'],
   p10:['Recommender System Architecture.png'],
@@ -29,6 +30,7 @@ const DIAGRAMS={
 | p01 · C-arm 음성 제어 | `AI Voice System Architecture.png` |
 | p02 · LLM·STT 평가 | `LLM STT Evaluation Design.png` |
 | p05 · Cephalo 랜드마크 | `Cephalometric Landmark Detection Overview.png` |
+| p06 · 규제 문서화 (MFDS) | `Regulatory Technical Documentation (MFDS).png` |
 | p08 · Text-to-SQL (DARVIS) | `DARVIS Product Overview.png`, `DARVIS Text2SQL Product UI.png`, `Text2SQL System Architecture.png` |
 | p09 · RAG 챗봇 | `DARVIS Product Overview.png`, `RAG System  Architecture.png`, `DARVIS RAG Product UI.png` |
 | p10 · 추천 시스템 | `Recommender System Architecture.png` |
@@ -46,6 +48,7 @@ const DIAGRAMS={
 ## 팁
 
 - 프로젝트 카드 썸네일(갤러리)에는 첫 번째 이미지가 대표 이미지로 표시됩니다.
+- **매핑이 없는 프로젝트**는 상세 카드에 이미지 영역(placeholder)을 아예 두지 않고, 갤러리 썸네일도 상단 이미지 스트립 없이 본문부터 시작합니다.
 - 이미지에는 별도의 캡션을 표시하지 않습니다 (alt 텍스트만 내부적으로 유지).
 - 이미지 클릭 시 새 탭에서 원본이 열립니다.
 - 가로로 긴 다이어그램은 카드 폭에 맞춰 자동 축소됩니다. 가독성을 위해 **가로 1200~1600px** 권장.

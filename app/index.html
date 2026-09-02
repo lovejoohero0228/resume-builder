@@ -445,6 +445,7 @@ const PFCSS=`
 .thumb .thimg{height:112px;background:repeating-linear-gradient(45deg,#eef1fb,#eef1fb 10px,#e3e8f7 10px,#e3e8f7 20px);display:flex;align-items:center;justify-content:center;color:#9fb6c8;font-size:12px;font-weight:600;border-bottom:1px solid var(--line);padding:0 14px;text-align:center}
 .thumb .thimg.has-img{background-size:cover;background-position:center;color:transparent}
 .thumb .thbody{padding:14px 16px}
+.thumb.noimg .thbody{padding-top:18px}
 .thnum{font-size:10.5px;font-weight:800;color:var(--pri);letter-spacing:.06em}
 .thtitle{font-size:15px;font-weight:700;margin:3px 0 6px;line-height:1.3}
 .thlead{font-size:12.5px;color:var(--mut);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:36px}
@@ -562,6 +563,7 @@ const DIAGRAMS={
   p01:['AI Voice System Architecture.png'],
   p02:['LLM STT Evaluation Design.png'],
   p05:['Cephalometric Landmark Detection Overview.png'],
+  p06:['Regulatory Technical Documentation (MFDS).png'],
   p08:['DARVIS Product Overview.png','DARVIS Text2SQL Product UI.png','Text2SQL System Architecture.png'],
   p09:['DARVIS Product Overview.png','RAG System  Architecture.png','DARVIS RAG Product UI.png'],
   p10:['Recommender System Architecture.png'],
@@ -578,11 +580,7 @@ function diagCap(fn){
 function figureHtml(p, isKo){
   const ORIGIN=(typeof location!=='undefined')?location.origin:'';
   const files=DIAGRAMS[p.id]||[];
-  if(!files.length){
-    const cap=esc(p.title);
-    const ph=`<div class="fig-ph"><div>🖼</div><div class="fmid">${isKo?'이미지 / 다이어그램 자리':'image / diagram'}</div><div class="fcap">${cap}</div></div>`;
-    return `<figure class="figure">${ph}</figure>`;
-  }
+  if(!files.length)return '';   // 이미지 없는 프로젝트는 placeholder 없이 영역 자체를 생략
   return files.map(function(fn){
     const src=ORIGIN+'/assets/diagrams/'+encodeURIComponent(fn);
     const cap=esc(files.length>1?diagCap(fn):p.title);   // 여러 장이면 파일명으로 구분
@@ -615,10 +613,11 @@ function fancyInner(parts, idn, target, lang, skills, order){
                   :{prob:'PROBLEM',role:'WHAT I DID',imp:'IMPACT'};
       const thumbOrigin=(typeof location!=='undefined')?location.origin:'';
       const thumbFile=(DIAGRAMS[p.id]||[])[0];
+      // 이미지 있으면 커버(로드 시 🖼 텍스트 교체), 없으면 상단 이미지 영역 자체 생략
       const thimgHtml=thumbFile
         ?`<div class="thimg" data-src="${thumbOrigin}/assets/diagrams/${encodeURIComponent(thumbFile)}">🖼 ${esc(p.title)}</div>`
-        :`<div class="thimg">🖼 ${esc(p.title)}</div>`;
-      thumbs+=`<a class="thumb" href="#${id}" data-tags="${esc(tagAttr)}">
+        :'';
+      thumbs+=`<a class="thumb${thumbFile?'':' noimg'}" href="#${id}" data-tags="${esc(tagAttr)}">
         ${thimgHtml}
         <div class="thbody"><div class="thnum">PROJECT ${num} · ${esc(roleScope(p.role,isKo))}</div>
           <div class="thtitle">${esc(p.title)}</div>
