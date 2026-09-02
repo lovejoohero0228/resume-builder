@@ -125,17 +125,21 @@
   .aerow.on{opacity:1}
   .angchip.sm{font-size:10.5px;padding:2px 8px;margin-top:3px;flex:0 0 auto}
   .vfields{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0}
-  .vedit{width:100%;box-sizing:border-box;resize:vertical;overflow:auto;height:auto;min-height:2.4em;max-height:140px;
+  .vedit{width:100%;box-sizing:border-box;resize:vertical;overflow:auto;height:auto;min-height:3.6em;max-height:160px;
     font:inherit;font-size:12px;line-height:1.4;color:var(--fg);background:var(--panel2);
     border:1px solid var(--line);border-radius:7px;padding:4px 8px;transition:border-color .12s,box-shadow .5s}
   .vedit:focus{outline:none;border-color:var(--acc)}
   .vedit.vok{border-color:#3fae6a;box-shadow:0 0 0 2px rgba(63,174,106,.25)}
   .vedit.verr{border-color:#d05a5a}
-  .coreblk{border:1px solid var(--line);border-radius:9px;padding:7px 9px;background:var(--panel);opacity:.7}
+  .coreblk{border:1px solid var(--line);border-radius:9px;padding:7px 9px;background:var(--panel);opacity:.75}
   .coreblk.on{opacity:1;border-color:#3d6bb0;background:#141c28}
   .coreblk .chk{padding:2px 2px}
-  .fedit{width:100%;box-sizing:border-box;margin-top:5px;resize:vertical;height:auto;min-height:3em;max-height:220px;overflow:auto;
-    font:11.5px/1.5 ui-monospace,Menlo,Consolas,monospace;color:var(--fg);background:var(--panel2);
+  .expblk{border:1px solid var(--line);border-radius:11px;padding:9px 10px;background:var(--panel);opacity:.8}
+  .expblk.on{opacity:1;border-color:#3d6bb0}
+  .expblk>.chk{font-weight:600}
+  .expkids{margin-top:8px;padding-left:8px;border-left:2px solid var(--line);display:flex;flex-direction:column;gap:6px}
+  .fedit{width:100%;box-sizing:border-box;margin-top:5px;resize:vertical;height:auto;min-height:3.4em;max-height:200px;overflow:auto;
+    font:12px/1.5 -apple-system,'Malgun Gothic',sans-serif;color:var(--fg);background:var(--panel2);
     border:1px solid var(--line);border-radius:7px;padding:6px 8px;transition:border-color .12s,box-shadow .5s}
   .fedit:focus{outline:none;border-color:var(--acc)}
   .fedit.vok{border-color:#3fae6a;box-shadow:0 0 0 2px rgba(63,174,106,.25)}
@@ -186,9 +190,7 @@
           <div id="sub-resume-sel">
             <div class="selbulk"><button type="button" class="bulkbtn" data-bulk="resume:1">모두 선택</button><button type="button" class="bulkbtn" data-bulk="resume:0">모두 해제</button></div>
             <div class="sel-h">섹션</div><div id="resSecSel" class="selgrid"></div>
-            <div class="sel-h">경력</div><div id="resExpSel" class="selgrid"></div>
-            <div class="sel-h">프로젝트 <span class="capnote">체크 = 포함 · 관점 칩 <b>복수 선택</b></span></div>
-            <div id="resProjSel"></div>
+            <div class="sel-h">경력 <span class="capnote">회사별 요약 + 하위 프로젝트</span></div><div id="resExpSel" class="selgrid"></div>
           </div>
           <div id="sub-portfolio-sel" style="display:none">
             <div class="selbulk"><button type="button" class="bulkbtn" data-bulk="portfolio:1">모두 선택</button><button type="button" class="bulkbtn" data-bulk="portfolio:0">모두 해제</button></div>
@@ -697,22 +699,40 @@ async function prefetchCore(){
   const wanted=(state.cat.files||[]).filter(f=>/00_identity|01_skills|02_education|90_appendix|\/10_experience\//.test(f));
   await Promise.all(wanted.map(async f=>{const d=await getJSON('/api/file?path='+encodeURIComponent(f));if(!d.error)state.coreFiles[f]=d.content;}));
 }
-function fileEditor(path){
-  const ta=document.createElement('textarea');
-  ta.className='fedit'; ta.spellcheck=false; ta.value=(state.coreFiles&&state.coreFiles[path])||'';
-  if(!path){ta.disabled=true;return ta;}
+/* 파일에서 '## 헤더' 섹션의 본문 영역을 찾음 (요약만 편집용) */
+function sectionRegion(content,header){
+  const re=new RegExp('^##\\s+'+header.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\s*$','m');
+  const m=re.exec(content); if(!m)return null;
+  const start=m.index+m[0].length;
+  const rest=content.slice(start);
+  const em=/\n##\s|\n<!--\s*\/?lang/.exec(rest);
+  const end=em?start+em.index:content.length;
+  const seg=content.slice(start,end);
+  return {start,end,lead:(seg.match(/^\s*/)||[''])[0],trail:(seg.match(/\s*$/)||[''])[0],text:seg.trim()};
+}
+function sumHeader(kind,lang){const en=lang==='en';
+  return kind==='identity'?(en?'Summary':'요약'):(en?'Context':'조직/역할 컨텍스트');}
+/* '회사명 아래 요약'(경력=Context, 프로필=요약)만 편집하는 textarea */
+function summaryEditor(path,kind){
+  const lang=$('#pLang').value==='en'?'en':'ko';
+  const reg=path?sectionRegion(state.coreFiles[path]||'',sumHeader(kind,lang)):null;
+  const ta=document.createElement('textarea'); ta.className='fedit'; ta.spellcheck=false;
+  ta.value=reg?reg.text:''; if(!reg){ta.placeholder='(요약 섹션 없음)'; ta.disabled=true;}
   ta.addEventListener('change',async()=>{
-    const r=await postJSON('/api/file',{path,content:ta.value});
-    if(r&&r.ok){state.coreFiles[path]=ta.value; ta.classList.remove('verr'); ta.classList.add('vok');setTimeout(()=>ta.classList.remove('vok'),700);}
+    const cur=state.coreFiles[path]||''; const r2=sectionRegion(cur,sumHeader(kind,lang));
+    if(!r2){ta.classList.add('verr');return;}
+    const nc=cur.slice(0,r2.start)+r2.lead+ta.value.trim()+r2.trail+cur.slice(r2.end);
+    const r=await postJSON('/api/file',{path,content:nc});
+    if(r&&r.ok){state.coreFiles[path]=nc; ta.classList.remove('verr'); ta.classList.add('vok'); setTimeout(()=>ta.classList.remove('vok'),700); renderPreviewPane(state.sub);}
     else ta.classList.add('verr');
   });
   return ta;
 }
-/* 체크(포함) + 인라인 파일 편집기를 묶은 블록 */
-function coreBlock(label,checked,onToggle,pathKey){
+/* 체크 + 요약 편집 블록 (프로필용) */
+function summaryBlock(label,checked,onToggle,pathKey,kind){
   const wrap=document.createElement('div'); wrap.className='coreblk'+(checked?' on':'');
   wrap.appendChild(selChk(label,checked,onToggle));
-  wrap.appendChild(fileEditor(corePath(pathKey)));
+  wrap.appendChild(summaryEditor(corePath(pathKey),kind));
   return wrap;
 }
 
@@ -824,21 +844,29 @@ function renderSelect(mode){
   if(mode==='resume'){
     const R=state.resume;
     const sec=$('#resSecSel'); sec.innerHTML='';
-    [['00_identity','프로필'],['01_skills','스킬'],['02_education','학력']].forEach(([s,l])=>
-      sec.appendChild(coreBlock(l,R.plain.has(s),v=>{v?R.plain.add(s):R.plain.delete(s);renderPreviewPane('resume');},s)));
+    // 프로필: 요약만 편집 / 스킬·학력: 체크박스만
+    sec.appendChild(summaryBlock('프로필',R.plain.has('00_identity'),v=>{v?R.plain.add('00_identity'):R.plain.delete('00_identity');renderPreviewPane('resume');},'00_identity','identity'));
+    sec.appendChild(selChk('스킬',R.plain.has('01_skills'),v=>{v?R.plain.add('01_skills'):R.plain.delete('01_skills');renderPreviewPane('resume');}));
+    sec.appendChild(selChk('학력',R.plain.has('02_education'),v=>{v?R.plain.add('02_education'):R.plain.delete('02_education');renderPreviewPane('resume');}));
+    // 경력: 회사별 블록 = 체크 + 요약(컨텍스트) 편집 + 하위 프로젝트 중첩
     const ex=$('#resExpSel'); ex.innerHTML='';
-    state.cat.experiences.forEach(e=>ex.appendChild(coreBlock(
-      `${esc(e.company_ko)} <span class="muted">(${e.sid.split('/')[1]})</span>`,
-      R.exp.has(e.sid), v=>{v?R.exp.add(e.sid):R.exp.delete(e.sid);renderPreviewPane('resume');},
-      '/'+e.sid.split('/')[1])));
-    const pr=$('#resProjSel'); pr.innerHTML='';
-    state.projOrder.forEach(pid=>pr.appendChild(selectProjectRow('resume',pid)));
+    state.cat.experiences.forEach(e=>{
+      const eid=e.sid.split('/')[1], expInc=R.exp.has(e.sid);
+      const blk=document.createElement('div'); blk.className='expblk'+(expInc?' on':'');
+      blk.appendChild(selChk(`${esc(e.company_ko)} <span class="muted">(${eid})</span>`,expInc,
+        v=>{v?R.exp.add(e.sid):R.exp.delete(e.sid);renderPreviewPane('resume');}));
+      blk.appendChild(summaryEditor(corePath('/'+eid),'experience'));
+      const kids=document.createElement('div'); kids.className='expkids';
+      (e.projects||[]).forEach(pid=>{ if(pj(pid)) kids.appendChild(selectProjectRow('resume',pid)); });
+      if(!e.projects||!e.projects.length){const n=document.createElement('div');n.className='muted';n.style.cssText='font-size:12px;padding:6px 2px';n.textContent='이 경력엔 연결된 프로젝트가 없습니다 (불렛 직접 작성)';kids.appendChild(n);}
+      blk.appendChild(kids); ex.appendChild(blk);
+    });
   }else{
     const P=state.portfolio;
     const sec=$('#portSecSel'); sec.innerHTML='';
-    sec.appendChild(coreBlock('소개',P.plain.has('00_identity'),v=>{v?P.plain.add('00_identity'):P.plain.delete('00_identity');renderPreviewPane('portfolio');},'00_identity'));
-    sec.appendChild(coreBlock('기술 스택',P.skillsOn!==false,v=>{P.skillsOn=v;renderPreviewPane('portfolio');},'01_skills'));
-    sec.appendChild(coreBlock('부록',P.plain.has('90_appendix'),v=>{v?P.plain.add('90_appendix'):P.plain.delete('90_appendix');renderPreviewPane('portfolio');},'90_appendix'));
+    sec.appendChild(summaryBlock('소개',P.plain.has('00_identity'),v=>{v?P.plain.add('00_identity'):P.plain.delete('00_identity');renderPreviewPane('portfolio');},'00_identity','identity'));
+    sec.appendChild(selChk('기술 스택',P.skillsOn!==false,v=>{P.skillsOn=v;renderPreviewPane('portfolio');}));
+    sec.appendChild(selChk('부록',P.plain.has('90_appendix'),v=>{v?P.plain.add('90_appendix'):P.plain.delete('90_appendix');renderPreviewPane('portfolio');}));
     const pr=$('#portProjSel'); pr.innerHTML='';
     state.projOrder.forEach(pid=>pr.appendChild(selectProjectRow('portfolio',pid)));
   }

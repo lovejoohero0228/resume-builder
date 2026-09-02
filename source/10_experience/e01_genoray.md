@@ -35,6 +35,10 @@ model development, evaluation, regulatory documentation, and stakeholder communi
 {{ p13 }}
 {{ p12 }}
 {{ p05 }}
+{{ p11 }}
+{{ p06 }}
+{{ p07 }}
+{{ p14 }}
 
 <!-- lang:ko -->
 - 전문 인재 특별채용(특채)으로 합류, 이후 사내 우수 인재 채용 프로그램 멘토로 선발되어 신규 입사자 온보딩·기술 멘토링 수행
