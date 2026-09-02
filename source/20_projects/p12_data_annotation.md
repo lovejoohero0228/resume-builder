@@ -1,7 +1,7 @@
 ---
 id: p12
 title_ko: 학습 데이터 구축 · 어노테이션 툴
-title_en: Training-Data Pipeline & Annotation Tooling
+title_en: Training Data Construction Project (Annotation Tooling)
 org: Genoray
 period: 2026-02 ~ 2026-10
 role: "AI팀 대표 단독 (기획·임상 담당자와 조율)"

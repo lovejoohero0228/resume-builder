@@ -1,7 +1,7 @@
 ---
 id: p01
 title_ko: C-arm 음성 제어 시스템
-title_en: C-arm Voice Control System
+title_en: C-arm AI Voice System
 org: Genoray
 period: 2026-01 ~ 2026-11
 role: "리드 (임상 요구조사~구현 — 신입 팀원 1명과 협업 / 배포·엔지니어링 — 단독)"
@@ -10,7 +10,7 @@ angles: [ownership-e2e, performance-optimization, engineering-craft]
 
 card:
   ko: "손댈 수 없는 수술 환경을 위해, 지연·온디바이스 제약을 뚫고 C-arm 음성 제어를 설계·배포"
-  en: "Owned C-arm voice control under real-time, on-device constraints"
+  en: "Owned the C-arm AI Voice System under real-time, on-device constraints"
 
 problem:
   goal_ko: "수술 중 멸균 상태에서도 손대지 않고 C-arm을 조작하도록, 음성 명령 기반 비접촉 제어를 자사 장비에 내재화"
@@ -26,7 +26,7 @@ problem:
 
 role_groups:
   - label_ko: "음성 명령을 장비 동작으로 바꾸는 파이프라인을 설계·구현"
-    label_en: "Designed and built the voice → device-motion pipeline"
+    label_en: "Designed and built the Voice-to-Command pipeline (voice → device motion)"
     uses: [f3, f5, f17]
   - label_ko: "STT 응답 지연·오인식을 최적화"
     label_en: "Optimized STT latency and misrecognition"
@@ -68,7 +68,7 @@ variants:
   - angle: ownership-e2e
     uses: [f3, f2]
     ko: "한국어 음성 명령을 실제 C-arm 장비의 물리적 동작으로 바꾸는 음성 → NLU → 모터 제어 파이프라인을 설계부터 디바이스 검증·배포까지 소유, 명령 인식 정확도 96% 달성"
-    en: "Owned end to end a Korean voice → NLU → motor-control pipeline driving a C-arm surgical device — from design through on-device validation and deployment — reaching 96% command accuracy"
+    en: "Owned the C-arm AI Voice System end to end — a Korean Voice-to-Command (voice → NLU → motor-control) pipeline driving a C-arm surgical device — from design through on-device validation and deployment, reaching 96% command accuracy"
   - angle: ownership-e2e
     uses: [f12, f13]
     ko: "자유도 높은 orchestration 기반 LLM 에이전트 구조를 데모 검증한 뒤, 온디바이스·보안·지연 제약에 맞춰 룰베이스 + 유사도 키워드 매칭 + sLLM fallback 하이브리드로 전환·확정"
@@ -105,8 +105,9 @@ short:
     4초 초과에서 0.4초 미만으로 단축하고, 유사도 기반 fallback 매칭으로 오인식에 대응 — 전체 콜
     정확도 86% → 94%·명령 인식 정확도 96% 달성. 물리 디바이스 검증 후 규제 인증을 진행 중.
   en: >
-    Built a Korean voice → NLU → motor-control system that turns spoken commands into physical
-    C-arm motion, addressing the problem that surgeons cannot touch controls while sterile. Cut
+    Built the C-arm AI Voice System — a Korean Voice-to-Command (voice → NLU → motor-control)
+    pipeline that turns spoken commands into physical C-arm motion, addressing the problem that
+    surgeons cannot touch controls while sterile. Cut
     STT latency from 4s+ to under 0.4s and handled misrecognition with similarity-based fallback
     matching, reaching 86% → 94% full-call accuracy and 96% command accuracy. Validated on-device,
     now in regulatory certification.
