@@ -4,6 +4,8 @@ company_ko: 제노레이
 company_en: Genoray
 title_ko: AI Research Engineer
 title_en: AI Research Engineer
+domain_ko: 멀티모달 AI · 의료 비전 · 로보틱스
+domain_en: Multimodal AI · Medical Vision · Robotics
 period: 2025-01 ~ 현재
 location_ko: 서울
 location_en: Seoul, KR

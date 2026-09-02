@@ -4,6 +4,8 @@ company_ko: 디피니트
 company_en: Dfinite
 title_ko: AI Research Engineer
 title_en: AI Research Engineer
+domain_ko: 제조 데이터 · RAG · LLM 시스템
+domain_en: Manufacturing Data · RAG · LLM Systems
 period: 2024-07 ~ 2025-01
 location_ko: 서울
 location_en: Seoul, KR

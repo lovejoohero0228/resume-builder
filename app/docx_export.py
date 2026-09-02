@@ -135,11 +135,18 @@ def resume_docx_bytes(rs: dict) -> bytes:
             _exp_state["header"] = True
         e = exps[_exp_state["i"]]
         _exp_state["i"] += 1
+        # 1줄: 회사 + 기간·위치
         p = _para(doc, before=4, after=0)
         _run(p, e.get("company", ""), BLACK, True, 9)
-        meta = " · ".join(x for x in [e.get("title"), e.get("period"), e.get("location")] if x)
-        if meta:
-            _run(p, "   —   " + meta, GRAY, False, 9)
+        when = "  ·  ".join(x for x in [e.get("period"), e.get("location")] if x)
+        if when:
+            _run(p, "   " + when, GRAY, False, 9)
+        # 2줄: 직함 | 도메인
+        line2 = e.get("title", "")
+        if e.get("domain"):
+            line2 += "  |  " + e["domain"]
+        if line2:
+            _run(_para(doc, after=1), line2, NAVY, False, 9)
         if e.get("context"):
             _rich(_para(doc, after=1), e["context"], GRAY, False, 9)
         for b in e.get("bullets", []):

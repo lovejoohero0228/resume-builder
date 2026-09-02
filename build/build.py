@@ -256,7 +256,10 @@ def render_experience(path: str, lang: str, projects: dict, emphasis: list,
     if lang == "en":
         period = period.replace("현재", "Present")
     loc = meta.get(f"location_{lang}", meta.get("location_ko", ""))
-    header = f"### {company} — {title}\n*{period} · {loc}*\n"
+    domain = meta.get(f"domain_{lang}", meta.get("domain_ko", ""))
+    meta1 = "  ·  ".join(x for x in [period, loc] if x)
+    line2 = title + (f"  |  {domain}" if domain else "")
+    header = f"### {company}   {meta1}\n*{line2}*\n"
 
     project_angles = project_angles or {}
     ph_ids = PLACEHOLDER_RE.findall(body)
@@ -553,6 +556,7 @@ def _experience_struct(path, lg, projects, emphasis, porder, max_bullets, report
 
     return {"company": meta.get(f"company_{lg}", meta.get("company_ko", "")),
             "title": meta.get(f"title_{lg}", meta.get("title_ko", "")),
+            "domain": meta.get(f"domain_{lg}", meta.get("domain_ko", "")),
             "period": period, "location": meta.get(f"location_{lg}", meta.get("location_ko", "")),
             "context": ctx, "sid": sid,
             "bullets": [it["text"] for it in items if not it["hidden"]],

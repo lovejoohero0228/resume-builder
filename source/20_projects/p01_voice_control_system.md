@@ -67,8 +67,8 @@ facts:
 variants:
   - angle: ownership-e2e
     uses: [f3, f2]
-    ko: "수술 중 손대지 않고 조작하는 C-arm AI Voice System을 설계부터 온디바이스 배포까지 단독 소유 — 한국어 Voice-to-Command 파이프라인으로 명령 인식 정확도 96% 달성"
-    en: "Owned the C-arm AI Voice System end to end — a hands-free Korean Voice-to-Command pipeline driving a C-arm surgical device — reaching 96% command accuracy"
+    ko: "수술 중 손대지 않고 비접촉으로 조작하도록, 한국어 Voice-to-Command(음성→NLU→모터 제어) 파이프라인을 설계부터 온디바이스 배포까지 단독 개발 — 명령 인식 정확도 96% 달성"
+    en: "Built and owned end to end a hands-free Korean Voice-to-Command pipeline that drives a C-arm surgical device from spoken commands — reaching 96% command accuracy"
   - angle: ownership-e2e
     uses: [f12, f13]
     ko: "자유도 높은 orchestration 기반 LLM 에이전트 구조를 데모 검증한 뒤, 온디바이스·보안·지연 제약에 맞춰 룰베이스 + 유사도 키워드 매칭 + sLLM fallback 하이브리드로 전환·확정"

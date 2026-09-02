@@ -4,6 +4,8 @@ company_ko: Blind (미국 테크)
 company_en: Blind (US Tech)
 title_ko: Data Scientist
 title_en: Data Scientist
+domain_ko: NLP · 데이터 사이언스 · 실험
+domain_en: NLP · Data Science · Experimentation
 period: 2022-12 ~ 2024-03
 location_ko: 원격 (미국팀)
 location_en: Remote, US / Seoul, KR

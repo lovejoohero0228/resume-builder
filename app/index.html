@@ -299,10 +299,13 @@ const R1CSS=`
 .r1 p.prof{margin:0}
 .r1 .skill{margin:1.5px 0}
 .r1 .skill b{color:#153D63}
-.r1 .job{margin:7px 0 3px}
+.r1 .job{margin:8px 0 3px}
+.r1 .job .jobtop{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
 .r1 .job .co{font-weight:700}
-.r1 .job .meta{color:#555;font-size:9pt}
-.r1 .job .ti{color:#555;font-size:9pt;margin:1px 0 2px}
+.r1 .job .jobwhen{color:#555;font-size:9pt;white-space:nowrap}
+.r1 .job .jobtitle{font-size:9.5pt;margin:1px 0 1px}
+.r1 .job .jobdom{color:#153D63}
+.r1 .job .ti{color:#555;font-size:9pt;margin:1px 0 3px}
 .r1 ul{margin:2px 0 3px;padding-left:16px}
 .r1 li{margin:1.5px 0}
 .r1 .edu{margin:1.5px 0}
@@ -376,8 +379,10 @@ function resumeInner(rs){
   const expBlock=()=>{ if(ei>=exps.length)return '';
     const e=exps[ei++]; let s='';
     if(!expHeader){s+=`<h2>${L.e}</h2>`;expHeader=true;}
-    const meta=[e.title,e.period,e.location].filter(Boolean).map(esc).join(' · ');
-    s+=`<div class="job"><span class="co">${esc(e.company)}</span>${meta?` <span class="meta">— ${meta}</span>`:''}`;
+    const when=[e.period,e.location].filter(Boolean).map(esc).join('  ·  ');
+    s+=`<div class="job">`
+      +`<div class="jobtop"><span class="co">${esc(e.company)}</span>${when?`<span class="jobwhen">${when}</span>`:''}</div>`
+      +`<div class="jobtitle">${esc(e.title||'')}${e.domain?`<span class="jobdom">  |  ${esc(e.domain)}</span>`:''}</div>`;
     if(e.context)s+=`<div class="ti">${mb(e.context)}</div>`;
     if(e.bullets&&e.bullets.length)s+='<ul>'+e.bullets.map(b=>`<li>${mb(b)}</li>`).join('')+'</ul>';
     return s+'</div>';

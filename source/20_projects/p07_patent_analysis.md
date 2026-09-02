@@ -44,9 +44,9 @@ facts:
 
 variants:
   - angle: shipping-delivery
-    uses: [f5]
-    ko: "특허 분석 결과를 개발 방향 결정·회피 설계 검토·신규 IP 출원에 반영"
-    en: "Fed the patent analysis into development-direction decisions, design-around review, and new IP filings"
+    uses: [f1, f2, f5]
+    ko: "C-arm·2D Ceph 관련 외부 특허 300건 이상을 AI 관점의 기술 유사성으로 검토·등급화하고, 침해 여부 판단 결과를 개발 방향·회피 설계·신규 IP 출원에 반영"
+    en: "Reviewed and graded 300+ external C-arm/2D-Ceph patents by AI-level technical similarity, feeding the infringement findings into development direction, design-around, and new IP filings"
   - angle: stakeholder-alignment
     uses: [f4, f3]
     ko: "외부 변리사·임상 자문·TF팀과 협업해 C-arm 선행 기술 테크트리를 직접 작성"
