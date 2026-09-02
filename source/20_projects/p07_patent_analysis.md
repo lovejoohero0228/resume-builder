@@ -1,7 +1,7 @@
 ---
 id: p07
-title_ko: 특허 랜드스케이프 분석 (C-arm 선행기술 · 2D Ceph)
-title_en: Patent Landscape Analysis (C-arm Prior Art · 2D Ceph)
+title_ko: 특허 분석
+title_en: Patent Analysis
 org: Genoray
 period: 2026-04 ~ 2026-08
 role: 참여 (팀)
