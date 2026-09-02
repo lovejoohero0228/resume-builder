@@ -273,16 +273,15 @@ def render_experience(path: str, lang: str, projects: dict, emphasis: list,
             report.append(f"⚠ {os.path.basename(path)}: 프로젝트 {pid} 소스 없음")
             return ""
         angs = project_angles.get(pid)
-        if angs:                                   # 선택된 관점별로 한 bullet
+        if angs:                                   # 선택된 관점들을 한 텍스트로 병합
             vs = [pick_variant_angle(proj["meta"], a) for a in angs]
         else:                                      # 폴백: emphasis 로 1개
             vs = [pick_variant(proj["meta"], emphasis, report)]
-        lines = []
-        for v in vs:
-            if v and budget[0] > 0:
-                lines.append("- " + (v.get(lang, "") or "").strip())
-                budget[0] -= 1
-        return "\n".join(lines)
+        merged = _merge_bullets([(v.get(lang, "") or "").strip() for v in vs if v])
+        if merged and budget[0] > 0:
+            budget[0] -= 1
+            return f"- **{_bullet_label(proj['meta'], lang, pid)}**: {merged}"
+        return ""
 
     substituted = PLACEHOLDER_RE.sub(repl, body)
     substituted = re.sub(r"(?m)^-\s*$", "", substituted)  # 빈 bullet 제거
@@ -472,6 +471,19 @@ def _education_struct(lg: str) -> list:
     return groups
 
 
+def _merge_bullets(texts: list) -> str:
+    """여러 관점 문장을 한 텍스트로 연결 (끝 마침표/구분자 정리 후 '; ')."""
+    parts = [t.strip().rstrip(" .·;") for t in texts if t and t.strip()]
+    return "; ".join(parts)
+
+
+def _bullet_label(meta: dict, lg: str, pid: str) -> str:
+    """이력서 불렛 리드(볼드)용 프로젝트 이름 — title 에서 끝 괄호 부제는 제거해 간결하게."""
+    t = (meta.get(f"title_{lg}") or meta.get("title_ko") or pid).strip()
+    t = re.sub(r"\s*\([^)]*\)\s*$", "", t).strip()
+    return t or pid
+
+
 def _experience_struct(path, lg, projects, emphasis, porder, max_bullets, report,
                        project_angles=None, sid="", bullet_order=None, bullet_hidden=None) -> dict:
     meta, body = V.parse_frontmatter(path)
@@ -498,12 +510,15 @@ def _experience_struct(path, lg, projects, emphasis, porder, max_bullets, report
             proj = projects.get(pid)
             if pid in kept and proj:
                 angs = project_angles.get(pid)
-                pairs = ([(a, pick_variant_angle(proj["meta"], a)) for a in angs] if angs
-                         else [("", pick_variant(proj["meta"], emphasis, report))])
-                for ang, v in pairs:
-                    if v and budget[0] > 0:
-                        items.append({"key": f"p:{pid}:{ang}", "text": (v.get(lg, "") or "").strip()})
-                        budget[0] -= 1
+                vs = ([pick_variant_angle(proj["meta"], a) for a in angs] if angs
+                      else [pick_variant(proj["meta"], emphasis, report)])
+                texts = [(v.get(lg, "") or "").strip() for v in vs if v]
+                merged = _merge_bullets(texts)
+                if merged and budget[0] > 0:
+                    label = _bullet_label(proj["meta"], lg, pid)
+                    # 프로젝트 = 하나의 불렛: **이름**: 연결된 텍스트
+                    items.append({"key": f"p:{pid}", "text": f"**{label}**: {merged}"})
+                    budget[0] -= 1
             i += 1
             continue
         if s.startswith("- "):
