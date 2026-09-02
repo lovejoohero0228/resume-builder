@@ -1162,8 +1162,14 @@ $('#exDoc').onclick=async()=>{
 $('#exPptx').onclick=async()=>{
   const kind=$('#pvKind').value, lang=$('#pvLang').value;
   if(kind!=='portfolio'){alert('PPT는 포트폴리오만 지원합니다.');return;}
-  const r=await fetch('/api/portfolio_pptx',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({profile:currentProfile(),lang})});
-  if(!r.ok){alert('pptx 생성 실패');return;}
+  let r;
+  try{ r=await fetch('/api/portfolio_pptx',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({profile:currentProfile(),lang})}); }
+  catch(e){ alert('PPT 생성 실패 — 서버에 연결할 수 없습니다. 서버를 실행했는지 확인하세요.'); return; }
+  if(!r.ok){
+    let detail=''; try{ const j=await r.json(); if(j&&j.error) detail=' — '+j.error; }catch(_){}
+    if(/pptx|module/i.test(detail)) detail+='\n(서버에서 `pip install -r requirements.txt` 후 다시 실행해 주세요)';
+    alert('PPT 생성 실패'+detail); return;
+  }
   const blob=await r.blob();const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`portfolio_${lang}.pptx`;a.click();
 };
 $('#exHtml').onclick=()=>{const kind=$('#pvKind').value,lang=$('#pvLang').value;
