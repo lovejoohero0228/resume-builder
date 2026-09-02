@@ -15,6 +15,7 @@ const DIAGRAMS={
   p05:['Cephalometric Landmark Detection Overview.png'],
   p08:['DARVIS Product Overview.png','DARVIS Text2SQL Product UI.png','Text2SQL System Architecture.png'],   // 프로젝트당 여러 장 가능
   p09:['DARVIS Product Overview.png','RAG System  Architecture.png','DARVIS RAG Product UI.png'],
+  p10:['Recommender System Architecture.png'],
   p11:['Auto positioning.jpg'],
   p12:['Training Data Construction Project-Labeling Tool.png'],
   p13:['Dental Panoramic Radiograph Segmentation Overview.png']
@@ -30,6 +31,7 @@ const DIAGRAMS={
 | p05 · Cephalo 랜드마크 | `Cephalometric Landmark Detection Overview.png` |
 | p08 · Text-to-SQL (DARVIS) | `DARVIS Product Overview.png`, `DARVIS Text2SQL Product UI.png`, `Text2SQL System Architecture.png` |
 | p09 · RAG 챗봇 | `DARVIS Product Overview.png`, `RAG System  Architecture.png`, `DARVIS RAG Product UI.png` |
+| p10 · 추천 시스템 | `Recommender System Architecture.png` |
 | p11 · 오토포지셔닝 | `Auto positioning.jpg` |
 | p12 · 어노테이션 툴 | `Training Data Construction Project-Labeling Tool.png` |
 | p13 · Panoramic 분할 | `Dental Panoramic Radiograph Segmentation Overview.png` |
