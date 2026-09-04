@@ -188,7 +188,9 @@ class Handler(BaseHTTPRequestHandler):
                 identity = a["identity"].get(lg) or {}
                 target = a["resume_struct"].get(lg, {}).get("target", "")
                 import pptx_export
-                data, _warnings = pptx_export.portfolio_pptx_bytes(identity, target, parts, lg, ROOT)
+                appendix = B.activity_groups(lg)
+                data, _warnings = pptx_export.portfolio_pptx_bytes(identity, target, parts, lg, ROOT,
+                                                                   appendix_groups=appendix)
                 return self._send_file(
                     data,
                     "application/vnd.openxmlformats-officedocument.presentationml.presentation",

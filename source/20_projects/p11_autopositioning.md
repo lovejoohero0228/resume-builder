@@ -1,88 +1,48 @@
 ---
 id: p11
-title_ko: C-arm Auto Positioning 리서치
-title_en: C-arm Auto Positioning Research
-org: Genoray
-period: 2026-06 ~ 진행중
-role: "리드 (2인 팀; 신입이 메인, 서포트에서 리딩으로)"
-tags: [Medical-AI, Vision, Multimodal]
-angles: [research-depth, engineering-craft, ownership-e2e]
-
-card:
-  ko: "임상 데이터가 부족한 상황에서 합성 데이터로 C-arm 자동 자세 추론 모델을 연구 (진행 중)"
-  en: "Researching C-arm Auto Positioning with synthetic data amid data scarcity (ongoing)"
+title_ko: "C-arm Auto Positioning 리서치"
+title_en: "C-arm Auto Positioning Research"
+org: "Genoray"
+period: "2026-06 ~ 진행중"
+role: "리드"
+role_note_ko: "팀원 1명과 협업"
+role_note_en: "With one teammate"
+tags: ["Medical AI", "Multimodal", "Vision", "Research"]
+angles: [research-depth, ownership-e2e]
 
 problem:
-  goal_ko: "scout 영상에서 타겟 구조물을 정답 포지션으로 정렬시킬 각 축별 이동·회전 delta를 추론하는 Auto Positioning 모델 연구."
-  goal_en: "Research an Auto Positioning model that, from a scout image, infers the per-axis translation/rotation deltas needed to align the target structure into the correct pose."
+  goal_ko: "1회 촬영만으로 타겟 구조물을 정확한 포지션으로 정렬 시키기 위해 각 축별 이동·회전 delta 값을 추론하는 Auto Positioning 모델 연구"
+  goal_en: "Research an Auto Positioning model that infers per-axis translation/rotation deltas to align a target structure in a single shot."
   hurdle_ko: |
-    - 실제 방사선 촬영 임상 데이터 확보가 협의 대기 중 (데이터 부족)
-    - 리서치·모델링 기획 단계 — 성능 검증 아직 불가
+    - 전문가(의사 / 방사선사)의 임상 경험으로 만들어진 암묵지 데이터 확보 필요
   hurdle_en: |
-    - Access to real radiographic clinical data is pending agreements (data scarcity)
-    - Still at the research / modeling-planning stage, so performance validation isn't yet possible
+    - Requires tacit-knowledge data formed from the clinical experience of experts (doctors / radiographers)
 
 role_groups:
-  - label_ko: "scout 영상을 기반으로 축별 delta를 추론하는 Auto Positioning 모델을 연구"
-    label_en: "Researched the scout-image, per-axis-delta Auto Positioning model"
-    uses: [f1]
-  - label_ko: "실데이터 확보 지연을 CT 기반 DeepDRR 선행연구 재현으로 보완"
-    label_en: "Offset delayed real data by reproducing CT-based DeepDRR prior work"
-    uses: [f2]
-  - label_ko: "합성 데이터 보완과 팬텀 실촬영, 두 데이터 전략을 병렬로 기획"
-    label_en: "Planned two data strategies in parallel — synthetic augmentation vs. phantom capture"
-    uses: [f3]
+  - label_ko: "학습 데이터 구축을 위한 두 전략을 병렬로 진행, 합성 데이터 활용 연구 & 실 데이터 확보"
+    label_en: "Ran two data strategies in parallel — synthetic-data research and real-data acquisition"
+    uses: [f1, f2]
+  - label_ko: "C-arm Auto Positioning 선행 연구 재현을 통한 모델링 기획"
+    label_en: "Planned modeling by reproducing prior work on C-arm Auto Positioning"
+    uses: [f3, f4]
 
 facts:
-  f1: {kind: artifact, value_ko: "scout 영상에서 타겟 구조물을 정답 포지션으로 정렬시킬 각 축별 이동·회전 delta를 추론하는 모델 연구", value_en: "researching a model that infers per-axis translation/rotation deltas — from a scout image — to move/rotate the device so the target structure appears in the correctly aligned pose", disclosure: public, confidence: measured}
-  f2: {kind: decision, value_ko: "실 임상 데이터 획득이 협의 대기 중이라, CT에서 C-arm 유사 projection 영상을 생성하는 DeepDRR 선행연구를 재현·테스트", value_en: "with access to real clinical data delayed by pending agreements, reproduced and tested DeepDRR prior work that generates C-arm-like projection images from CT volumes", disclosure: public, confidence: measured}
-  f3: {kind: decision, value_ko: "합성 데이터의 한계 보완과 팬텀 실촬영 데이터 획득, 두 방향의 기획을 병렬로 진행", value_en: "planning two data strategies in parallel — augmenting around synthetic-data limits, or acquiring real data via a phantom", disclosure: public, confidence: measured}
-  # 성능 검증 미진행 (리서치·모델링 기획 단계) / 디지털 트윈은 p01 참조
+  f1: {kind: artifact, value_ko: "실데이터 확보 지연 문제를 CT 기반 DeepDRR 선행연구 재현으로 보완 — CT 영상에서 projection 영상을 생성하는 연구", value_en: "", disclosure: public, confidence: measured}
+  f2: {kind: artifact, value_ko: "임상 데이터 혹은 phantom 데이터를 확보하기 위한 데이터 구축 프로세스 기획", value_en: "Planned a data-construction process to acquire clinical or phantom data", disclosure: public, confidence: measured}
+  f3: {kind: artifact, value_ko: "3D C-arm 장비에서 최초의 촬영 영상 한 장만으로, 목표 위치까지의 축 별 이동량을 학습하는 선행 연구 논문 조사 및 구현", value_en: "", disclosure: public, confidence: measured}
+  f4: {kind: artifact, value_ko: "입력: 스카우트 촬영 영상 → 출력: 축별 이동 delta 값", value_en: "", disclosure: public, confidence: measured}
 
 variants:
   - angle: research-depth
-    uses: [f1, f2]
-    ko: "scout 영상에서 각 축별 이동·회전 delta를 추론하는 Auto Positioning 모델을 연구하고, 실데이터 확보 지연을 CT 기반 DeepDRR 선행연구 재현으로 보완"
-    en: "Researched an Auto Positioning model that infers per-axis translation/rotation deltas from a scout image, offsetting delayed real data by reproducing CT-based DeepDRR prior work"
-  - angle: engineering-craft
-    uses: [f2]
-    ko: "CT 영상에서 C-arm projection 유사 영상을 생성하는 DeepDRR 파이프라인을 재현·구성"
-    en: "Reproduced and set up a DeepDRR pipeline that generates C-arm-like projection images from CT volumes"
+    uses: [f3, f1]
+    ko: "단일 스카우트 촬영만으로 축별 이동 delta를 추론하는 C-arm Auto Positioning 선행 연구를 조사·재현하고, 실데이터 확보 지연을 CT 기반 DeepDRR 합성 영상 생성으로 보완"
+    en: "Surveyed and reproduced prior work on C-arm Auto Positioning that infers per-axis translation deltas from a single scout shot, and mitigated real-data delays with CT-based DeepDRR synthetic projections"
   - angle: ownership-e2e
-    uses: [f3]
-    ko: "실데이터 획득이 지연되는 가운데 합성 데이터 보완과 팬텀 실촬영, 두 방향의 데이터 전략·기획을 병렬로 주도"
-    en: "Drove two parallel data strategies — synthetic-data augmentation and phantom-based real capture — amid delayed real-data access"
+    uses: [f1, f2]
+    ko: "합성 데이터 연구와 실데이터 확보 두 전략을 병렬로 진행하며 임상·phantom 데이터 구축 프로세스를 기획"
+    en: "Ran synthetic-data research and real-data acquisition in parallel, planning a clinical/phantom data-construction process"
 
 short:
-  ko: >
-    scout 영상에서 타겟 구조물을 정답 포지션으로 정렬시킬 각 축별 이동·회전 delta를 추론하는
-    Auto Positioning 모델을 리서치. 실 임상 데이터 획득 지연을 CT 기반 DeepDRR 선행연구 재현으로 보완하고,
-    합성 데이터 보완과 팬텀 실촬영, 두 방향의 데이터 전략을 병렬로 기획 중. (리서치·모델링 기획 단계,
-    진행중)
-  en: >
-    Research on an Auto Positioning model that infers per-axis deltas from a scout image to move/
-    rotate the device so the target structure lands in the aligned pose. Offsetting delayed clinical
-    data by reproducing CT-based DeepDRR prior work, and planning two data strategies in parallel —
-    synthetic augmentation and phantom capture. (Research / modeling-planning stage, ongoing.)
+  ko: "단일 스카우트 촬영만으로 축별 이동 delta를 추론하는 C-arm Auto Positioning 선행 연구를 조사·재현하고, 실데이터 확보 지연을 CT 기반 DeepDRR 합성 영상 생성으로 보완"
+  en: "Surveyed and reproduced prior work on C-arm Auto Positioning that infers per-axis translation deltas from a single scout shot, and mitigated real-data delays with CT-based DeepDRR synthetic projections"
 ---
-
-## 1. 문제 정의와 제약조건
-- scout 영상에서 타겟 구조물을 정답 포지션으로 정렬시킬 각 축별 이동·회전 delta를 추론
-- 제약: 실 방사선 촬영 임상 데이터 획득이 협의 대기 중 (데이터 부족)
-
-## 2. 접근과 대안 비교
-- **합성 데이터**: CT에서 C-arm projection 유사 영상을 생성하는 DeepDRR 선행연구를 재현·테스트
-- **데이터 전략(병렬 기획)**: 합성 데이터의 한계 보완과 팬텀 실촬영, 방향별 기획을 병렬로 진행
-
-## 3. 구현
-- (리서치·모델링 기획 단계) DeepDRR 파이프라인을 재현
-- 디지털 트윈 테스트 환경은 **p01** 참조
-
-## 4. 검증
-- 성능 검증 미진행 (진행중)
-
-## 5. 결과
-- 진행중
-
-## 6. 한계와 다음 단계
-- 진행중 — 데이터 확보 방향 확정 후 성능 검증 예정

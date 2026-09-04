@@ -1,6 +1,6 @@
 <!-- lang:ko -->
 **최주희**
-AI / ML Research Engineer · 멀티모달 AI (Vision · Language · Voice-to-Robotics) · 의료 도메인
+AI / ML Research Engineer · 멀티모달 AI (Language · Vision · Voice-to-Robotics)
 lovejoohero@gmail.com · Seoul, South Korea · linkedin.com/in/jooheechoi123
 
 ## 요약

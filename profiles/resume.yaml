@@ -1,0 +1,26 @@
+# 일반 이력서 — 포트폴리오와 같은 강조점·표현으로 조립.
+# 빌드: python build/build.py resume  →  dist/resume/resume_ko.md
+name: resume
+target: ""
+lang: ko
+
+# 실질적인 액션·모델링 문장을 먼저(대표 성과가 지표 한 줄로 얇아지지 않게).
+emphasis:
+  - ownership-e2e
+  - modeling-foundation
+  - engineering-craft
+  - research-depth
+  - stakeholder-alignment
+  - shipping-delivery
+  - performance-optimization
+
+resume:
+  include:
+    - 00_identity
+    - 01_skills
+    - 10_experience/e01
+    - 10_experience/e02
+    - 10_experience/e03
+    - 02_education
+  project_order: [p01, p02, p13, p05, p12, p11, p08, p09, p10, p03, p06, p07]
+  max_bullets_per_job: 8

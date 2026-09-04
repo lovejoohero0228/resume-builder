@@ -46,6 +46,12 @@ angles:
 tags:
   domain: [Medical-AI, Enterprise-AI, Consumer-Platform, On-device]
   tech:   [LLM, RAG, Speech, Vision, NLP, Text2SQL, Agent, Multimodal]
+  # 포트폴리오 카드 상단 칩용 자유 태그 (portfolio_ko.pptx 표기와 일치).
+  # validate 는 목록 밖 태그도 경고만 내고 허용하지만, 아는 태그는 여기 등록해 경고를 없앤다.
+  topic:  ["Medical AI", "B2C Platform", "Voice-to-Robotics", "STT", "Optimization",
+           "Evaluation", "Segmentation", "Detection", "Classification",
+           "Recommendation", "Research", "Regulation", "Patent",
+           "Data Construction", "SAM", "Annotation Tool"]
 
 banned_terms:
   ko: [대폭, 획기적, 크게, 매우, 상당히, 효율적으로, 성공적으로, 완벽하게, 혁신적]

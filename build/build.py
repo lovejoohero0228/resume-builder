@@ -265,7 +265,9 @@ def render_experience(path: str, lang: str, projects: dict, emphasis: list,
     ph_ids = PLACEHOLDER_RE.findall(body)
     # project_order 가 있으면 그 목록만 포함(순서는 본문 순서 유지), 없으면 전부
     kept = set(project_order) if project_order else set(ph_ids)
-    budget = [max_bullets if max_bullets else 10 ** 6]
+    # 사용자가 명시적으로 프로젝트를 고른 경우(project_order) 고른 건 모두 노출한다.
+    # max_bullets 는 자동 선택(project_order 미지정) 때만 개수를 제한한다.
+    budget = [10 ** 6 if project_order else (max_bullets if max_bullets else 10 ** 6)]
 
     def repl(m):
         pid = m.group(1)
@@ -391,9 +393,10 @@ def portfolio_parts(profile: dict, projects: dict, lg: str, report: list) -> lis
                 _g["hidden"] = _g["key"] in _bhid
             for _it in impact:
                 _it["hidden"] = _it["key"] in _bhid
+            role_note = (m.get(f"role_note_{lg}") or m.get("role_note_ko") or "").strip()
             parts.append({"sid": sid, "kind": "project", "title": title, "md": md,
                           "id": pid, "org": m.get("org", ""), "period": m.get("period", ""),
-                          "role": role_disp, "tags": m.get("tags", []) or [],
+                          "role": role_disp, "role_note": role_note, "tags": m.get("tags", []) or [],
                           "angles": (pconf.get("project_angles") or {}).get(pid) or (m.get("angles", []) or []),
                           "points": points, "facts": pubfacts, "body_md": body_md,
                           "role_groups": role_groups,
@@ -474,6 +477,12 @@ def _education_struct(lg: str) -> list:
     return groups
 
 
+def activity_groups(lg: str) -> list:
+    """02_education.md 에서 '활동·수상 / 스터디·개인 프로젝트' 섹션만 추출 (PPT 요약 슬라이드용)."""
+    keys = ("활동", "수상", "스터디", "프로젝트", "Activities", "Awards", "Self-study", "Personal")
+    return [g for g in _education_struct(lg) if any(k in (g.get("title") or "") for k in keys)]
+
+
 def _merge_bullets(texts: list) -> str:
     """여러 관점 문장을 한 텍스트로 연결 (끝 마침표/구분자 정리 후 '; ')."""
     parts = [t.strip().rstrip(" .·;") for t in texts if t and t.strip()]
@@ -501,7 +510,8 @@ def _experience_struct(path, lg, projects, emphasis, porder, max_bullets, report
     project_angles = project_angles or {}
     ph_ids = PLACEHOLDER_RE.findall(hl)
     kept = set(porder) if porder else set(ph_ids)
-    budget = [max_bullets if max_bullets else 10 ** 6]
+    # 명시적으로 고른 프로젝트(porder)는 모두 노출 — max_bullets 는 자동 선택 때만 제한.
+    budget = [10 ** 6 if porder else (max_bullets if max_bullets else 10 ** 6)]
 
     # 각 불렛에 안정적 key 부여: 프로젝트 = "p:<pid>:<angle>", 직접 작성 = "x:<n>"
     items, plain_n, lines, i = [], 0, hl.split("\n"), 0

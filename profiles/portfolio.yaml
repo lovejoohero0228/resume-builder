@@ -1,0 +1,31 @@
+# 전체 포트폴리오 — portfolio_ko.pptx 재현용 (프로젝트 순서·구성 고정).
+# 빌드: python app/make_pptx.py portfolio   →  dist/portfolio/portfolio_ko.pptx
+name: portfolio
+target: ""            # 커버 상단 소제목은 비우면 "포트폴리오" 로 표시
+lang: ko
+
+emphasis:
+  - ownership-e2e
+  - engineering-craft
+  - shipping-delivery
+  - modeling-foundation
+  - performance-optimization
+  - research-depth
+  - stakeholder-alignment
+
+portfolio:
+  include:
+    - 00_identity
+    - 20_projects/p01
+    - 20_projects/p08
+    - 20_projects/p09
+    - 20_projects/p02
+    - 20_projects/p13
+    - 20_projects/p05
+    - 20_projects/p12
+    - 20_projects/p11
+    - 20_projects/p10
+    - 20_projects/p06
+    - 20_projects/p07
+    - 20_projects/p03
+  detail_level: full

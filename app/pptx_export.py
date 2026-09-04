@@ -473,11 +473,15 @@ def _header_layout(part, lang, content_w):
     y_meta = y_title + title_h + 0.05
     meta = "   ·   ".join(x for x in [part.get("org"), part.get("period")] if x)
     y_chips = y_meta + (0.24 if meta else 0.0)
-    chips = [(a, PRI, WHITE, None) for a in (part.get("angles") or [])] + \
-            [(t, CHIP, PRI_INK, None) for t in (part.get("tags") or [])]
+    # 상단 칩 = 주제 태그만 (portfolio_ko.pptx 와 동일 — angle 칩은 노출하지 않음)
+    chips = [(t, CHIP, PRI_INK, None) for t in (part.get("tags") or [])]
     chip_h = _chip_rows_height(chips, content_w) if chips else 0.0
     div_y = y_chips + chip_h + 0.08
-    role = role_tag_parts(part.get("role") or "", is_ko)
+    # 역할: scope(리더/참여) 는 role 문자열에서, 상세 문구는 role_note 에서
+    role_str = part.get("role") or ""
+    scope = role_scope(role_str, is_ko) if role_str else None
+    detail = (part.get("role_note") or "").strip()
+    role = (scope, detail) if scope else None
     row_y = div_y + 0.1
     row_h = 0.28 if role else 0.0
     body_top = div_y + 0.1 + row_h + (0.08 if role else 0.02)
@@ -581,6 +585,98 @@ def add_project_slide(prs, part, num, lang, size, compact, left_w, right_w, gap,
     return warnings
 
 
+# ---------- 활동·수상 요약 슬라이드 (education struct 의 활동 그룹들) ----------
+
+def _edu_blocks(group):
+    """education 그룹 하나 → 블록 리스트 (kh 헤더 + top/sub 아이템)."""
+    blocks = [{"type": "kh", "text": group.get("title", "")}]
+    for it in group.get("items", []) or []:
+        blocks.append({"type": "edu_sub" if it.get("sub") else "edu_top",
+                       "text": it.get("text", "")})
+    return blocks
+
+
+def _sum_block_h(b, w, size, lg=LINE_GAP):
+    t = b["type"]
+    if t == "kh":
+        return KH_H + 0.06
+    if t == "edu_top":
+        return est_h(b["text"], w - 0.16, size, lg) + 0.08
+    if t == "edu_sub":
+        return est_h(b["text"], w - 0.24, size - 0.5, lg) + 0.05
+    return 0.0
+
+
+def _draw_sum_block(slide, b, x, y, w, size, lg=LINE_GAP):
+    t = b["type"]
+    if t == "kh":
+        _rect(slide, x, y + 0.035, 0.05, 0.17, PRI)
+        _label(slide, x + 0.13, y - 0.02, w - 0.13, 0.25, b["text"], size + 1.5, PRI_INK, True)
+        _rect(slide, x, y + KH_H - 0.035, w, Pt(1.1) / 914400, LINE)
+        return KH_H + 0.06
+    if t == "edu_top":
+        h = est_h(b["text"], w - 0.16, size, lg)
+        _rect(slide, x, y + 0.07, 0.08, 0.08, PRI)
+        _, tf = _textbox(slide, x + 0.16, y, w - 0.16, h + 0.05, fit=True)
+        p = tf.paragraphs[0]
+        p.line_spacing = lg
+        _rich(p, b["text"], size, INK, False)
+        return h + 0.08
+    if t == "edu_sub":
+        h = est_h(b["text"], w - 0.24, size - 0.5, lg)
+        _, tf = _textbox(slide, x + 0.18, y, w - 0.18, h + 0.05, fit=True)
+        p = tf.paragraphs[0]
+        p.line_spacing = lg
+        _run(p, "▹ ", size - 0.5, PRI, True)
+        _rich(p, b["text"], size - 0.5, BODY)
+        return h + 0.05
+
+
+def _pack_two_columns(groups, colw, size):
+    """그룹(블록 묶음)을 높이 기준으로 2컬럼에 그리디 배치. (colA, colB, hA, hB) 반환."""
+    colA, colB, hA, hB = [], [], 0.0, 0.0
+    for g in groups:
+        blocks = _edu_blocks(g)
+        gh = sum(_sum_block_h(b, colw, size) for b in blocks) + 0.12
+        if hA <= hB:
+            colA.append((blocks, gh)); hA += gh
+        else:
+            colB.append((blocks, gh)); hB += gh
+    return colA, colB, hA, hB
+
+
+def add_summary_slide(prs, title, groups, lang):
+    slide = _blank_slide(prs)
+    x0, y0, x1, y1 = _card_frame(slide)
+    content_w = x1 - x0
+    is_ko = lang != "en"
+    _label(slide, x0, y0, content_w, 0.2, "APPENDIX", 10.5, PRI, True)
+    _, ttf = _textbox(slide, x0, y0 + 0.21, content_w, 0.42)
+    _run(ttf.paragraphs[0], title, TITLE_PT, INK, True)
+    _rect(slide, x0, y0 + 0.74, content_w, Pt(1) / 914400, LINE)
+    body_top = y0 + 0.92
+    body_h = y1 - body_top
+
+    col_gap = 0.5
+    colw = (content_w - col_gap) / 2
+
+    # 덱 본문과 무관하게, 이 슬라이드만 들어갈 최대 폰트를 고른다.
+    size = _SIZE_STEPS[-1]
+    for s in _SIZE_STEPS:
+        _cA, _cB, hA, hB = _pack_two_columns(groups, colw, s)
+        if max(hA, hB) <= body_h - SAFETY_MARGIN_IN:
+            size = s
+            break
+
+    colA, colB, _hA, _hB = _pack_two_columns(groups, colw, size)
+    for col, cx in ((colA, x0), (colB, x0 + colw + col_gap)):
+        cy = body_top
+        for blocks, _gh in col:
+            for b in blocks:
+                cy += _draw_sum_block(slide, b, cx, cy, colw, size)
+            cy += 0.12
+
+
 def add_cover_slide(prs, identity, target, lang):
     is_ko = lang != "en"
     slide = _blank_slide(prs)
@@ -597,7 +693,8 @@ def add_cover_slide(prs, identity, target, lang):
         _run(p3, identity["tagline"], 15, RGBColor(0xCF, 0xDD, 0xF2), False)
 
 
-def portfolio_pptx_bytes(identity: dict, target: str, parts: list, lang: str, root_dir: str):
+def portfolio_pptx_bytes(identity: dict, target: str, parts: list, lang: str, root_dir: str,
+                         appendix_groups: list = None):
     prs = Presentation()
     prs.slide_width = SLIDE_W
     prs.slide_height = SLIDE_H
@@ -628,6 +725,11 @@ def portfolio_pptx_bytes(identity: dict, target: str, parts: list, lang: str, ro
         files = dmap.get(part.get("id"), [])
         warnings += add_project_slide(prs, part, num, lang, deck_size, compact,
                                       left_w, right_w, COL_GAP, files, root_dir)
+
+    # 맨 뒤: 활동·수상 요약 슬라이드
+    if appendix_groups:
+        add_summary_slide(prs, "활동 · 수상" if lang != "en" else "Activities · Awards",
+                          appendix_groups, lang)
 
     bio = io.BytesIO()
     prs.save(bio)

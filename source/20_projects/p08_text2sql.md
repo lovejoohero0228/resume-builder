@@ -1,100 +1,66 @@
 ---
 id: p08
-title_ko: Text2SQL 모델 (DARVIS)
-title_en: Text2SQL Model (DARVIS)
-org: Dfinite
-period: 2024-07 ~ 2025-01
-role: "SQL 생성 모델·서빙 최적화 주도 (DARVIS 제품 전체는 팀 공동)"
-tags: [Enterprise-AI, LLM, Text2SQL]
-angles: [engineering-craft, performance-optimization, research-depth]
-
-card:
-  ko: "온디바이스·보안 제약에서 DARVIS의 Text2SQL 모델을 파인튜닝·서빙 최적화"
-  en: "Fine-tuned DARVIS Text2SQL under on-device, no-cloud constraints"
+title_ko: "Text2SQL 모델 개발 — DARVIS AI"
+title_en: "Text2SQL Model Development — DARVIS AI"
+org: "Dfinite"
+period: "2024-07 ~ 2024-12"
+role: "참여"
+role_note_ko: "SQL 생성 모델·서빙 최적화 담당 —  DARVIS AI 개발 팀 총 4인"
+role_note_en: "Owned SQL-generation model & serving optimization — DARVIS AI team of 4"
+tags: ["LLM", "Text2SQL"]
+angles: [ownership-e2e, engineering-craft, shipping-delivery]
 
 problem:
-  goal_ko: "여러 시스템(MES·ERP·SAP·자체 DB)에 흩어진 데이터를 자연어로 질의·요약 — 스타트업 첫 제품 DARVIS의 핵심 SQL 생성 모델 구축."
-  goal_en: "Build the core SQL-generation model of the startup's first product, DARVIS — querying/summarizing data scattered across MES, ERP, SAP, and in-house DBs in natural language."
+  goal_ko: "여러 시스템(MES·ERP·SAP·자체 DB)에 흩어진 데이터를 자연어로 질의하고 요약된 결과를 제공하는 것 — 프로덕트의 핵심 기능"
+  goal_en: "Query data scattered across systems (MES, ERP, SAP, in-house DB) in natural language and return summarized results — the product's core feature."
   hurdle_ko: |
-    - 온디바이스·보안(데이터 반출 제약) — 클라우드 대형 모델 사용 불가
-    - 응답 속도(성능) 요건
-    - 신입으로서 sLLM 선정·서빙 최적화·경량화를 선행연구 기반으로 주도
+    - 온디바이스· 고객사 데이터 보안 — 클라우드 LLM 사용 불가
+    - 응답 속도 요구사항 충족 요건,  sLLM 선정·서빙 최적화·경량화 진행
+    - 신규 프로덕트 개발 단계에서 핵심 모듈의 책임자로서 선행 연구와 실험을 주도
   hurdle_en: |
-    - On-device + data-egress security rule out large cloud models
-    - Response-speed (performance) requirement
-    - As a junior, had to drive sLLM selection / serving optimization / lightweighting from prior work
+    - On-device / client data security — cloud LLMs not allowed
+    - Response-speed requirements — sLLM selection, serving optimization, and compression
+    - As owner of the core module in a new product, drove the research and experiments
 
 role_groups:
-  - label_ko: "SQL 생성 파인튜닝 모델을 구축하고 학습·평가 데이터를 직접 구축"
-    label_en: "Built the SQL-generation fine-tuned model and its training/eval data"
-    uses: [f1]
-  - label_ko: "최신 프롬프팅·파인튜닝 기법을 실험·비교해 접근을 확정"
-    label_en: "Experimented with and compared recent prompting/fine-tuning techniques to settle the approach"
-    uses: [f2]
-  - label_ko: "온디바이스 제약에 맞춰 sLLM·서빙 엔진을 선정·경량화·최적화"
-    label_en: "Selected, lightweighted, and optimized the sLLM and serving engine for on-device limits"
+  - label_ko: "SQL 생성 파인튜닝 모델을 fine-tuning하고, 학습 및 평가 데이터를 직접 구축"
+    label_en: "Fine-tuned the SQL-generation model and built the training/eval data"
+    uses: [f1, f2]
+  - label_ko: "“자연어 쿼리 → 쿼리 파싱 결과 → SQL문”으로 구성된 학습·평가 데이터셋 구축"
+    label_en: "Built a training/eval dataset of (natural-language query → parsed query → SQL)"
+    uses: [f3]
+  - label_ko: "온디바이스 제약에 맞춰 sLLM·서빙 엔진을 선정, 이후 경량화·최적화 주도"
+    label_en: "Selected the sLLM and serving engine under on-device constraints, then drove compression and optimization"
     uses: [f4, f5]
   - label_ko: "자동차부품 제조사 첫 PoC에서 다중 시스템을 통합·배포"
-    label_en: "Integrated and deployed multiple systems in the first manufacturer PoC"
+    label_en: "Integrated and deployed multiple systems in the first PoC at an auto-parts maker"
     uses: [f6]
 
 facts:
-  f1: {kind: artifact, value_ko: "DARVIS Text2SQL에서 중간 결과를 SQL문으로 생성하는 모델의 파인튜닝을 담당하고, 평가·학습 데이터를 직접 구축", value_en: "owned fine-tuning of the model that generates SQL from intermediate results in DARVIS's Text2SQL, and built the evaluation/training data", disclosure: public, confidence: measured}
-  f2: {kind: decision, value_ko: "스키마 injection·few-shot·chain-of-thought 프롬프팅·파인튜닝 등 최신 기법을 실험·비교", value_en: "experimented with and compared a range of recent techniques — schema injection, few-shot, chain-of-thought prompting, and fine-tuning", disclosure: public, confidence: measured}
-  f3: {kind: metric, value_ko: "DARVIS Text2SQL은 여러 데이터베이스를 동시에 조회해 3초 이내로 결과를 요약 (제품 공개 정보)", value_en: "DARVIS Text2SQL queries multiple databases simultaneously and summarizes results within 3 seconds (public product info)", disclosure: public, confidence: measured}
-  f4: {kind: decision, value_ko: "온디바이스·성능 제약 아래 품질·성능 트레이드오프를 따져 최적 sLLM과 가장 빠른 서빙 엔진을 선정하고 서빙 최적화", value_en: "under on-device and performance constraints, selected the best sLLM and fastest serving engine by weighing the quality/performance trade-off, and optimized serving", disclosure: public, confidence: measured}
-  f5: {kind: decision, value_ko: "LoRA 등 경량화 파인튜닝·양자화 기법을 선행연구 기반으로 연구·적용", value_en: "researched and applied lightweight fine-tuning (e.g., LoRA) and quantization based on prior work", disclosure: public, confidence: measured}
-  f6: {kind: scope, value_ko: "자동차부품 제조사 첫 PoC에서 MES·ERP·SAP·자체 DB에 산재한 데이터를 통합·연동하고, 약 6개월간 핵심 기능을 개발·배포", value_en: "with an auto-parts manufacturer as the first PoC, integrated data scattered across MES, ERP, SAP, and in-house DBs, developing and deploying core features over ~6 months", disclosure: public, confidence: measured}
-  f7: {kind: adoption, value_ko: "DARVIS를 코리아크레딧뷰로(KCB) PoC에도 적용 — 수만 개 신용분석 지표의 자연어 질의, 프로파일 RAG 검색, 차트/보고서 자동화, 권한 관리 (약 1.5개월, 7개 검증 항목 완료; 정량 지표 분석 중)", value_en: "DARVIS was also applied in a Korea Credit Bureau (KCB) PoC — natural-language querying over tens of thousands of credit-analysis metrics, profile RAG search, chart/report automation, and access control (~1.5 months, 7 validation items completed; quantitative metrics under analysis)", disclosure: public, confidence: measured}
+  f1: {kind: artifact, value_ko: "파싱된 유저 입력과 테이블 스키마 정보를 바탕으로 SQL문을 생성하는 모델의 개발을 담당하고, SQL문의 검증 로직을 설계", value_en: "Owned development of the SQL-generation model from parsed user input and table schema, and designed the SQL validation logic", disclosure: public, confidence: measured}
+  f2: {kind: artifact, value_ko: "스키마 injection·few-shot·chain-of-thought prompting·fine-tuning 등 최신 기법을 실험·비교", value_en: "", disclosure: public, confidence: measured}
+  f3: {kind: artifact, value_ko: "SQL문의 다양한 문법 요소를 조합하여 최종 SQL문을 조립한 뒤, 자연어 쿼리까지 역순으로 생성하는 방식을 통해 데이터셋 구축", value_en: "", disclosure: public, confidence: measured}
+  f4: {kind: artifact, value_ko: "온디바이스·성능 제약 아래 품질·성능 트레이드오프를 따져 최적 sLLM과 가장 서빙 엔진을 선정하고 서빙 최적화", value_en: "", disclosure: public, confidence: measured}
+  f5: {kind: artifact, value_ko: "LoRA 등 경량화 파인튜닝·양자화 기법을 선행연구 기반으로 연구·적용", value_en: "", disclosure: public, confidence: measured}
+  f6: {kind: artifact, value_ko: "자동차부품 제조사 첫 PoC에서 MES·ERP·SAP·자체 DB에 산재한 데이터를 통합·연동하고, 약 6개월간 핵심 기능을 개발·배포 ·개선", value_en: "", disclosure: public, confidence: measured}
+  f7: {kind: adoption, value_ko: "여러 데이터베이스를 자연어로 동시에 조회해, 3초 이내로 결과를 요약", value_en: "Queried multiple databases at once in natural language and summarized results within 3 seconds", disclosure: public, confidence: measured}
+  f8: {kind: adoption, value_ko: "DARVIS의 핵심 기능의 초기 모델 개발 담당 및 성공적인 첫 PoC 진행", value_en: "Owned the initial model for DARVIS's core feature and ran a first PoC", disclosure: public, confidence: measured}
 
 variants:
+  - angle: ownership-e2e
+    uses: [f2, f3, f7, f8]
+    ko: "제조 데이터를 자연어로 질의하는 DARVIS의 SQL 생성 모델을 담당 — 스키마 injection·few-shot·CoT·파인튜닝을 비교하고 학습·평가 데이터셋을 직접 구축, 여러 DB를 3초 이내로 요약 응답"
+    en: "Owned DARVIS's SQL-generation model for querying manufacturing data in natural language — compared schema injection, few-shot, CoT, and fine-tuning, built the train/eval dataset, and summarized across multiple DBs within 3 seconds"
   - angle: engineering-craft
-    uses: [f1, f4]
-    ko: "DARVIS의 핵심 SQL 생성 파인튜닝 모델을 개발하고, 온디바이스·보안 제약에 맞춰 sLLM과 서빙 엔진을 선정·최적화"
-    en: "Developed DARVIS's core SQL-generation fine-tuned model and selected/optimized the sLLM and serving engine for on-device, no-cloud constraints"
-  - angle: performance-optimization
-    uses: [f3, f4]
-    ko: "sLLM 경량화·양자화와 서빙 엔진 최적화로 여러 데이터베이스를 동시 조회해 3초 이내로 결과를 요약하는 성능을 확보"
-    en: "Through sLLM quantization/lightweighting and serving-engine optimization, reached sub-3-second summaries while querying multiple databases at once"
-  - angle: research-depth
-    uses: [f2, f5]
-    ko: "스키마 injection·few-shot·chain-of-thought·파인튜닝 등 최신 기법을 실험·비교하고, LoRA 경량화·양자화 선행연구를 재현·적용"
-    en: "Experimented with and compared recent techniques (schema injection, few-shot, chain-of-thought, fine-tuning) and reproduced/applied prior work on LoRA lightweighting and quantization"
+    uses: [f4, f5]
+    ko: "온디바이스·보안 제약(클라우드 LLM 불가)에서 최적 sLLM·서빙 엔진을 선정하고 LoRA 경량화·양자화로 서빙 최적화"
+    en: "Under on-device/security constraints (no cloud LLM), selected the sLLM and serving engine and optimized serving with LoRA compression and quantization"
+  - angle: shipping-delivery
+    uses: [f6]
+    ko: "자동차부품 제조사 첫 PoC에서 MES·ERP·SAP·자체 DB를 통합·연동해 약 6개월간 핵심 기능을 개발·배포"
+    en: "In the first PoC at an auto-parts maker, integrated MES/ERP/SAP/in-house DBs and developed and deployed the core feature over about 6 months"
 
 short:
-  ko: >
-    초기 5인 AI팀 일원으로 스타트업 첫 제품 DARVIS의 Text2SQL 핵심 모델을 담당. 스키마
-    injection·few-shot·chain-of-thought·파인튜닝 등 최신 기법을 실험하고, 온디바이스 제약 아래 최적
-    sLLM·서빙 엔진 선정과 LoRA 경량화·양자화로 성능을 확보. 자동차부품 제조사 첫 PoC에서
-    MES·ERP·SAP·자체 DB를 통합해 약 6개월간 개발·배포. 제품은 여러 DB를 동시 조회해 3초 이내로
-    요약(공개 정보).
-  en: >
-    As part of the founding 5-person AI team, owned the Text2SQL model of the startup's first
-    product, DARVIS. Experimented with recent techniques (schema injection, few-shot, chain-of-thought,
-    fine-tuning) and secured performance under on-device constraints via the best sLLM/serving engine
-    and LoRA lightweighting/quantization. With an auto-parts manufacturer as the first PoC, integrated
-    MES, ERP, SAP, and in-house DBs and shipped core features over ~6 months; the product queries
-    multiple databases at once and summarizes within 3 seconds (public info).
+  ko: "제조 데이터를 자연어로 질의하는 DARVIS의 SQL 생성 모델을 담당 — 스키마 injection·few-shot·CoT·파인튜닝을 비교하고 학습·평가 데이터셋을 직접 구축, 여러 DB를 3초 이내로 요약 응답"
+  en: "Owned DARVIS's SQL-generation model for querying manufacturing data in natural language — compared schema injection, few-shot, CoT, and fine-tuning, built the train/eval dataset, and summarized across multiple DBs within 3 seconds"
 ---
-
-## 1. 문제 정의와 제약조건
-- 파편화된 MES·ERP·SAP·자체 DB 데이터를 자연어로 질의·요약
-- 제약: 온디바이스·성능(응답 속도)·보안 (데이터 반출 제약)
-
-## 2. 접근과 대안 비교
-- 스키마 injection·few-shot·chain-of-thought 프롬프팅·파인튜닝 등 최신 기법을 실험·비교
-- 품질/성능 트레이드오프를 따져 최적 sLLM·가장 빠른 서빙 엔진을 선정
-
-## 3. 구현
-- 중간 결과를 SQL로 생성하는 파인튜닝 모델 (평가·학습 데이터 직접 구축)
-- LoRA 등 경량화 파인튜닝과 양자화, 서빙 엔진 최적화
-
-## 4. 결과 · 배포
-- 자동차부품 제조사 첫 PoC: MES·ERP·SAP·자체 DB를 통합·연동하고, 약 6개월간 핵심 기능을 개발·배포
-- 제품 공개 정보: 여러 데이터베이스를 동시 조회해 3초 이내로 결과를 요약
-- DARVIS를 **코리아크레딧뷰로(KCB) PoC**에도 적용 — 수만 개 신용분석 지표의 자연어 질의, 프로파일
-  RAG 검색, 차트/보고서 자동화, 권한 관리 (약 1.5개월, 7개 검증 항목 완료; 정량 지표 분석 중)
-
-## 5. 한계와 배운 점
-- 온디바이스 제약에 맞춘 sLLM 선정·서빙 최적화·경량화 파인튜닝·양자화를 선행연구를 따라 진행 —
-  신입으로서 난도가 높았으나 그 과정에서 빠르게 성장

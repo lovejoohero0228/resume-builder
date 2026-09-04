@@ -111,7 +111,7 @@ def validate_project(path: str, vocab: dict):
         valid_tags.update(group)
     for t in meta.get("tags", []) or []:
         if t not in valid_tags:
-            errors.append(f"{name}: vocab 에 없는 tag '{t}'")
+            warnings.append(f"{name}: vocab 에 없는 tag '{t}' (자유 태그로 허용)")
 
     # facts enum
     facts = meta.get("facts", {}) or {}
@@ -175,10 +175,13 @@ def validate_project(path: str, vocab: dict):
             if not any(h.lower() in en.lower() for h in HEDGE_EN):
                 errors.append(f"{tag}: estimated/recalled fact 참조인데 en 에 완화·구간 표현 없음")
 
-    # 포트폴리오 표준 형식 — 모든 프로젝트 통일 (문제 정의 2분할 + 나의 역할 그룹)
+    # 포트폴리오 표준 형식 — 문제 정의(2분할)는 선택. 단, 넣었다면 4필드 모두 채운다.
+    # (일부 '참여' 소품 프로젝트는 문제 정의 없이 '나의 역할'만 노출 — PPT 레이아웃과 일치)
     problem = meta.get("problem")
-    if not isinstance(problem, dict):
-        errors.append(f"{name}: problem 블록 없음 (goal_ko/goal_en/hurdle_ko/hurdle_en 필요)")
+    if problem is None:
+        warnings.append(f"{name}: problem 블록 없음 (문제 정의 생략 — 나의 역할만 노출)")
+    elif not isinstance(problem, dict):
+        errors.append(f"{name}: problem 형식 오류 (dict 필요)")
     else:
         for k in ("goal_ko", "goal_en", "hurdle_ko", "hurdle_en"):
             if not (problem.get(k) or "").strip():
